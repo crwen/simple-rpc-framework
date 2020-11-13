@@ -1,7 +1,7 @@
 package top.crwenassert.rpc.client;
 
-import top.crwenassert.rpc.server.dto.RPCRequest;
-import top.crwenassert.rpc.server.dto.RPCResponse;
+import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.domain.dto.RPCRequest;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -16,6 +16,7 @@ import java.lang.reflect.Proxy;
  * @create 2020-11-13-15:27
  * @since JDK 1.8
  */
+@Slf4j
 public class RPCClientProxy implements InvocationHandler {
 
     private String host;
@@ -34,6 +35,7 @@ public class RPCClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        log.info("调用方法：{}#{}", method.getDeclaringClass().getName(), method.getName());
         // 构建 RPCRequest 请求对象
         RPCRequest rpcRequest = RPCRequest.builder()
                 .interfaceName(method.getDeclaringClass().getName())
@@ -43,6 +45,6 @@ public class RPCClientProxy implements InvocationHandler {
                 .build();
         RPCClient rpcClient = new RPCClient();
         // 发送请求
-        return ((RPCResponse) rpcClient.sendRequest(rpcRequest, host, port)).getData();
+        return rpcClient.sendRequest(rpcRequest, host, port);
     }
 }

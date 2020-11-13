@@ -31,13 +31,18 @@ public class RPCServer {
                 keepAliveTime, TimeUnit.MINUTES, workQueue, threadFactory);
     }
 
+    /**
+     *  服务端主动注册服务
+     * @param service
+     * @param port
+     */
     public void register(Object service, int port) {
         try(ServerSocket server = new ServerSocket(port);) {
             log.info("server starts...");
             Socket socket;
             while ((socket = server.accept()) != null) {
                 log.info("client connected. ip: " + socket.getRemoteSocketAddress());
-                threadPool.execute(new WorkerThread(socket, service));
+                threadPool.execute(new RequestHandler(socket, service));
             }
         } catch (IOException e) {
             log.error("occur IOException: ", e);

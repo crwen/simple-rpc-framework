@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.server.enums;
+package top.crwenassert.rpc.domain.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,8 +18,8 @@ public enum ResponseCode {
 
     SUCCESS(200, "success"),
     FAIL(500, "fail"),
-    NOT_FOUND_METHOD(404, "cannot find method"),
-    NOT_FOUND_CLASS(404, "cannot find class")
+    METHOD_NOT_FOUND(404, "cannot find method"),
+    CLASS_NOT_FOUND(404, "cannot find class")
 
     ;
 

@@ -1,7 +1,7 @@
-package top.crwenassert.rpc.server.dto;
+package top.crwenassert.rpc.domain.dto;
 
 import lombok.Data;
-import top.crwenassert.rpc.server.enums.ResponseCode;
+import top.crwenassert.rpc.domain.enums.ResponseCode;
 
 import java.io.Serializable;
 

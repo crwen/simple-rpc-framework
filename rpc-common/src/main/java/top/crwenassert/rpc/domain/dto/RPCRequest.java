@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.server.dto;
+package top.crwenassert.rpc.domain.dto;
 
 import lombok.Builder;
 import lombok.Data;
