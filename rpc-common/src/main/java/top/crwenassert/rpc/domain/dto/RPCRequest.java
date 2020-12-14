@@ -1,7 +1,9 @@
 package top.crwenassert.rpc.domain.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -15,6 +17,8 @@ import java.io.Serializable;
  * @since JDK 1.8
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class RPCRequest implements Serializable {
 

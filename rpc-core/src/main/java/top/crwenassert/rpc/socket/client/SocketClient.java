@@ -1,6 +1,7 @@
-package top.crwenassert.rpc.client;
+package top.crwenassert.rpc.socket.client;
 
 import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.RPCClient;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
@@ -14,7 +15,7 @@ import java.net.Socket;
 
 /**
  * ClassName: RPCClient
- * Description: 远程方法调用的消费者
+ * Description: Socket方式远程方法调用的消费者（客户端）
  * date: 2020/11/13 14:56
  *
  * @author crwen
@@ -22,9 +23,18 @@ import java.net.Socket;
  * @since JDK 1.8
  */
 @Slf4j
-public class RPCClient {
+public class SocketClient implements RPCClient {
 
-    public Object sendRequest(RPCRequest rpcRequest, String host, int port) {
+    private final String host;
+    private final int port;
+
+    public SocketClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    @Override
+    public Object sendRequest(RPCRequest rpcRequest) {
         try (Socket socket = new Socket(host, port)) {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());

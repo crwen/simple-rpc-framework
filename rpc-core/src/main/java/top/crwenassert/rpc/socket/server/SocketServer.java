@@ -1,7 +1,9 @@
-package top.crwenassert.rpc.server;
+package top.crwenassert.rpc.socket.server;
 
 import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.registry.ServiceRegistry;
+import top.crwenassert.rpc.RequestHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,7 +12,7 @@ import java.util.concurrent.*;
 
 /**
  * ClassName: RPCServer
- * Description:
+ * Description: Socket方式远程方法调用的服务提供者（服务端）
  * date: 2020/11/13 13:45
  *
  * @author crwen
@@ -18,7 +20,7 @@ import java.util.concurrent.*;
  * @since JDK 1.8
  */
 @Slf4j
-public class RPCServer {
+public class SocketServer implements RPCServer {
 
     private static final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 50;
@@ -29,7 +31,7 @@ public class RPCServer {
     private final ServiceRegistry serviceRegistry;
 
 
-    public RPCServer(ServiceRegistry serviceRegistry) {
+    public SocketServer(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
 
         BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);

@@ -3,7 +3,7 @@ package top.crwenassert.rpc.service;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.registry.DefaultServiceRegistry;
 import top.crwenassert.rpc.registry.ServiceRegistry;
-import top.crwenassert.rpc.server.RPCServer;
+import top.crwenassert.rpc.socket.server.SocketServer;
 
 /**
  * ClassName: TestServer
@@ -19,7 +19,7 @@ public class TestServer {
         HelloService helloService = new HelloServiceImpl();
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
-        RPCServer rpcServer = new RPCServer(serviceRegistry);
+        SocketServer rpcServer = new SocketServer(serviceRegistry);
         rpcServer.start(9000);
     }
 }
