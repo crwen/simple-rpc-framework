@@ -1,7 +1,5 @@
 package top.crwenassert.rpc.serializer;
 
-
-
 /**
  * ClassName: CommonSerializer
  * Description: 通用序列化/反序列化接口
@@ -20,6 +18,8 @@ public interface CommonSerializer {
 
     static CommonSerializer getByCode(int code) {
         switch (code) {
+            case 0:
+                return new KryoSerializer();
             case 1:
                 return new JsonSerializer();
             default:

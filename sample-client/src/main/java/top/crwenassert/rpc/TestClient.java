@@ -2,7 +2,7 @@ package top.crwenassert.rpc;
 
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
-import top.crwenassert.rpc.netty.client.NettyClient;
+import top.crwenassert.rpc.socket.client.SocketClient;
 
 /**
  * ClassName: TestClient
@@ -15,7 +15,7 @@ import top.crwenassert.rpc.netty.client.NettyClient;
  */
 public class TestClient {
     public static void main(String[] args) {
-        NettyClient client = new NettyClient("127.0.0.1", 9000);
+        SocketClient client = new SocketClient("127.0.0.1", 9000);
         RPCClientProxy rpcClientProxy = new RPCClientProxy(client);
         HelloService helloService = rpcClientProxy.getProxy(HelloService.class);
         MessageObject object = new MessageObject(12, "this is message");

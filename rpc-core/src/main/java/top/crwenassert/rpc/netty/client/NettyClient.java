@@ -12,7 +12,7 @@ import top.crwenassert.rpc.codec.CommonDecoder;
 import top.crwenassert.rpc.codec.CommonEncoder;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
-import top.crwenassert.rpc.serializer.JsonSerializer;
+import top.crwenassert.rpc.serializer.KryoSerializer;
 
 /**
  * ClassName: NettyClient
@@ -46,7 +46,8 @@ public class NettyClient implements RPCClient {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         pipeline.addLast(new CommonDecoder())
-                                .addLast(new CommonEncoder(new JsonSerializer()))
+                                //.addLast(new CommonEncoder(new JsonSerializer()))
+                                .addLast(new CommonEncoder(new KryoSerializer()))
                                 .addLast(new NettyClientHandler());
                     }
                 });

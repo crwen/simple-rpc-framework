@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.codec.CommonDecoder;
 import top.crwenassert.rpc.codec.CommonEncoder;
-import top.crwenassert.rpc.serializer.JsonSerializer;
+import top.crwenassert.rpc.serializer.KryoSerializer;
 
 /**
  * ClassName: NettyServer
@@ -41,7 +41,8 @@ public class NettyServer implements RPCServer {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new CommonEncoder(new JsonSerializer()));
+                            //pipeline.addLast(new CommonEncoder(new JsonSerializer()));
+                            pipeline.addLast(new CommonEncoder(new KryoSerializer()));
                             pipeline.addLast(new CommonDecoder());
                             pipeline.addLast(new NettyServerHandler());
                         }
