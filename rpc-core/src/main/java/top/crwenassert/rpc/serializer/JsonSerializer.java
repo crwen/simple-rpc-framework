@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.enums.SerializerCode;
+import top.crwenassert.rpc.exception.SerializeException;
 
 import java.io.IOException;
 
@@ -28,8 +29,7 @@ public class JsonSerializer implements CommonSerializer {
             return objectMapper.writeValueAsBytes(obj);
         } catch (JsonProcessingException e) {
             log.error("序列化时发生错误：{}", e.getMessage());
-            e.printStackTrace();
-            return null;
+            throw new SerializeException("序列化时发生错误");
         }
     }
 
@@ -43,8 +43,7 @@ public class JsonSerializer implements CommonSerializer {
             return obj;
         } catch (IOException e) {
             log.error("序列化时发生错误：{}", e.getMessage());
-            e.printStackTrace();
-            return null;
+            throw new SerializeException("反序列化时发生错误");
         }
     }
 
