@@ -15,6 +15,7 @@ import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.serializer.CommonSerializer;
+import top.crwenassert.rpc.util.RPCMessageChecker;
 
 /**
  * ClassName: NettyClient
@@ -67,8 +68,9 @@ public class NettyClient implements RPCClient {
                     }
                 });
                 channel.closeFuture().sync();
-                AttributeKey<RPCResponse> key = AttributeKey.valueOf("rpcResponse");
+                AttributeKey<RPCResponse> key = AttributeKey.valueOf("rpcResponse" + rpcRequest.getRequestId());
                 RPCResponse rpcResponse = channel.attr(key).get();
+                RPCMessageChecker.check(rpcRequest, rpcResponse);
                 return rpcResponse.getData();
             }
 

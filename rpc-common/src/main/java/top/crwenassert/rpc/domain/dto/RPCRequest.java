@@ -23,6 +23,12 @@ import java.io.Serializable;
 public class RPCRequest implements Serializable {
 
     private static final long serialVersionUID = 1832953511510140746L;
+
+    /**
+     *  请求号
+     */
+    private String requestId;
+
     /**
      *  待调用的接口名称
      */

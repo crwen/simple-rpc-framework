@@ -10,6 +10,7 @@ import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 import top.crwenassert.rpc.socket.util.ObjectReader;
 import top.crwenassert.rpc.socket.util.ObjectWriter;
+import top.crwenassert.rpc.util.RPCMessageChecker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class SocketClient implements RPCClient {
                 throw new RPCException(RPCErrorEnum.SERVICE_INVOCATION_FAILURE,
                         " service: " + rpcRequest.getInterfaceName());
             }
-
+            RPCMessageChecker.check(rpcRequest, rpcResponse);
             return rpcResponse.getData();
         } catch (IOException  e) {
             log.error("服务调用发生错误: ", e);

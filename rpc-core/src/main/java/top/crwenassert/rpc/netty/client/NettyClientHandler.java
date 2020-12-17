@@ -25,7 +25,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RPCResponse>
     protected void channelRead0(ChannelHandlerContext ctx, RPCResponse msg) throws Exception {
         try {
             log.info(String.format("客户端接收到消息: %s", msg));
-            AttributeKey<RPCResponse> key = AttributeKey.valueOf("rpcResponse");
+            AttributeKey<RPCResponse> key = AttributeKey.valueOf("rpcResponse" + msg.getRequestId());
             ctx.channel().attr(key).set(msg);
             ctx.channel().close();
         } finally {

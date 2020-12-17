@@ -50,7 +50,7 @@ public class RequestHandlerThread implements Runnable {
             Object service = serviceRegistry.getService(interfaceName);
             Object result = requestHandler.handle(rpcRequest, service);
             // 将调用得到的结果发送出去
-            RPCResponse<Object> response = RPCResponse.success(result);
+            RPCResponse<Object> response = RPCResponse.success(result, rpcRequest.getRequestId());
             ObjectWriter.writeObject(outputStream, response, serializer);
 
         } catch (IOException  e) {

@@ -6,6 +6,7 @@ import top.crwenassert.rpc.domain.dto.RPCRequest;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.UUID;
 
 /**
  * ClassName: RPCClientProxy
@@ -34,7 +35,7 @@ public class RPCClientProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         log.info("调用方法: {}#{}", method.getDeclaringClass().getName(), method.getName());
-        RPCRequest rpcRequest = new RPCRequest(method.getDeclaringClass().getName(),
+        RPCRequest rpcRequest = new RPCRequest(UUID.randomUUID().toString(), method.getDeclaringClass().getName(),
                 method.getName(), args, method.getParameterTypes());
         return client.sendRequest(rpcRequest);
     }
