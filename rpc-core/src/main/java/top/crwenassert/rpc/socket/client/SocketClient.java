@@ -7,10 +7,13 @@ import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.domain.enums.ResponseCode;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.serializer.CommonSerializer;
+import top.crwenassert.rpc.socket.util.ObjectReader;
+import top.crwenassert.rpc.socket.util.ObjectWriter;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 /**
@@ -27,6 +30,7 @@ public class SocketClient implements RPCClient {
 
     private final String host;
     private final int port;
+    private CommonSerializer serializer;
 
     public SocketClient(String host, int port) {
         this.host = host;
@@ -35,12 +39,15 @@ public class SocketClient implements RPCClient {
 
     @Override
     public Object sendRequest(RPCRequest rpcRequest) {
+        if (serializer == null) {
+            log.error("未设置序列化器");
+            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
+        }
         try (Socket socket = new Socket(host, port)) {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            objectOutputStream.writeObject(rpcRequest);
-            objectOutputStream.flush();
-            RPCResponse rpcResponse = (RPCResponse) objectInputStream.readObject();
+            OutputStream outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
+            ObjectWriter.writeObject(outputStream, rpcRequest, serializer);
+            RPCResponse rpcResponse = (RPCResponse) ObjectReader.readObject(inputStream);
             // check
             if (rpcResponse == null) {
                 log.error("服务调用失败，service：{}", rpcRequest.getInterfaceName());
@@ -54,9 +61,14 @@ public class SocketClient implements RPCClient {
             }
 
             return rpcResponse.getData();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException  e) {
             log.error("服务调用发生错误: ", e);
             throw new RPCException("服务调用失败: ", e);
         }
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer) {
+        this.serializer = serializer;
     }
 }

@@ -1,17 +1,18 @@
 package top.crwenassert.rpc.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
-import top.crwenassert.rpc.codec.CommonDecoder;
-import top.crwenassert.rpc.codec.CommonEncoder;
-import top.crwenassert.rpc.serializer.KryoSerializer;
+import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
+import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.serializer.CommonSerializer;
 
 /**
  * ClassName: NettyServer
@@ -24,8 +25,16 @@ import top.crwenassert.rpc.serializer.KryoSerializer;
  */
 @Slf4j
 public class NettyServer implements RPCServer {
+
+    // 序列化器
+    private CommonSerializer serializer;
+
     @Override
     public void start(int port) {
+        if (serializer == null) {
+            log.error("未设置序列化器");
+            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
+        }
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -37,16 +46,8 @@ public class NettyServer implements RPCServer {
                     .option(ChannelOption.SO_BACKLOG, 256)
                     .option(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ChannelPipeline pipeline = ch.pipeline();
-                            //pipeline.addLast(new CommonEncoder(new JsonSerializer()));
-                            pipeline.addLast(new CommonEncoder(new KryoSerializer()));
-                            pipeline.addLast(new CommonDecoder());
-                            pipeline.addLast(new NettyServerHandler());
-                        }
-                    });
+                    .childHandler(new NettyServerChannelInitializer(serializer));
+
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
@@ -55,5 +56,10 @@ public class NettyServer implements RPCServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer) {
+        this.serializer = serializer;
     }
 }

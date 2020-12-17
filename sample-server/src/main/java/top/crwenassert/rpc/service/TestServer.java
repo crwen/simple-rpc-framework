@@ -3,6 +3,7 @@ package top.crwenassert.rpc.service;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.registry.DefaultServiceRegistry;
 import top.crwenassert.rpc.registry.ServiceRegistry;
+import top.crwenassert.rpc.serializer.KryoSerializer;
 import top.crwenassert.rpc.socket.server.SocketServer;
 
 /**
@@ -20,6 +21,7 @@ public class TestServer {
         ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
         serviceRegistry.register(helloService);
         SocketServer rpcServer = new SocketServer(serviceRegistry);
+        rpcServer.setSerializer(new KryoSerializer());
         rpcServer.start(9000);
     }
 }

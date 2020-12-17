@@ -1,6 +1,7 @@
 package top.crwenassert.rpc;
 
 import top.crwenassert.rpc.domain.dto.RPCRequest;
+import top.crwenassert.rpc.serializer.CommonSerializer;
 
 /**
  * ClassName: RPCClient
@@ -13,4 +14,6 @@ import top.crwenassert.rpc.domain.dto.RPCRequest;
  */
 public interface RPCClient {
     Object sendRequest(RPCRequest rpcRequest);
+
+    void setSerializer(CommonSerializer serializer);
 }

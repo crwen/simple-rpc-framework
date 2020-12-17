@@ -2,6 +2,7 @@ package top.crwenassert.rpc.service;
 
 import top.crwenassert.rpc.netty.server.NettyServer;
 import top.crwenassert.rpc.registry.DefaultServiceRegistry;
+import top.crwenassert.rpc.serializer.KryoSerializer;
 
 /**
  * ClassName: TestNettyServer
@@ -18,6 +19,7 @@ public class TestNettyServer {
         DefaultServiceRegistry registry = new DefaultServiceRegistry();
         registry.register(helloService);
         NettyServer server = new NettyServer();
+        server.setSerializer(new KryoSerializer());
         server.start(9999);
     }
 }

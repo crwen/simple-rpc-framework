@@ -2,8 +2,11 @@ package top.crwenassert.rpc.socket.server;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
-import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.RequestHandler;
+import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
+import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.registry.ServiceRegistry;
+import top.crwenassert.rpc.serializer.CommonSerializer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -29,6 +32,7 @@ public class SocketServer implements RPCServer {
     private ExecutorService threadPool;
     private RequestHandler requestHandler = new RequestHandler();
     private final ServiceRegistry serviceRegistry;
+    private CommonSerializer serializer;
 
 
     public SocketServer(ServiceRegistry serviceRegistry) {
@@ -45,16 +49,25 @@ public class SocketServer implements RPCServer {
      * @param port
      */
     public void start(int port) {
+        if (serializer == null) {
+            log.error("未设置序列化器");
+            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
+        }
         try(ServerSocket server = new ServerSocket(port);) {
             log.info("服务器启动...");
             Socket socket;
             while ((socket = server.accept()) != null) {
                 log.info("消费者连接： {}:{}",socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry));
+                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {
             log.error("服务器启动发生错误: ", e);
         }
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer) {
+        this.serializer = serializer;
     }
 }
