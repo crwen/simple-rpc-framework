@@ -2,7 +2,6 @@ package top.crwenassert.rpc.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -16,6 +15,9 @@ import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 import top.crwenassert.rpc.util.RPCMessageChecker;
+
+import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ClassName: NettyClient
@@ -53,13 +55,11 @@ public class NettyClient implements RPCClient {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
         }
-        bootstrap.handler(new NettyClientChannelInitializer(serializer));
 
+        AtomicReference<Object> result = new AtomicReference<>(null);
         try {
-            ChannelFuture future = bootstrap.connect(host, port).sync();
-            log.info("客户端连接到服务器 {}:{}", host, port);
-            Channel channel = future.channel();
-            if(channel != null) {
+            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+            if (channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if(future1.isSuccess()) {
                         log.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
@@ -72,12 +72,14 @@ public class NettyClient implements RPCClient {
                 RPCResponse rpcResponse = channel.attr(key).get();
                 RPCMessageChecker.check(rpcRequest, rpcResponse);
                 return rpcResponse.getData();
+            } else {
+                System.exit(0);
             }
 
         } catch (InterruptedException e) {
             log.error("发送消息时有错误发生: ", e);
         }
-        return null;
+        return result.get();
     }
 
     @Override
