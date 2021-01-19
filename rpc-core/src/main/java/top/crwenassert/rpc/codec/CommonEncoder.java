@@ -31,16 +31,23 @@ public class CommonEncoder extends MessageToByteEncoder {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
+        // 魔数
         out.writeInt(MAGIC_NUMBER);
-        //
+        // 协议版本号
+        out.writeByte(3);
+        // 报文类型
         if (msg instanceof RPCRequest) {
-            out.writeInt(PackageType.REQUEST_PACK.getCode());
+            out.writeByte(PackageType.REQUEST_PACK.getCode());
         }else if (msg instanceof RPCResponse) {
-            out.writeInt(PackageType.RESPONSE_PACK.getCode());
+            out.writeByte(PackageType.RESPONSE_PACK.getCode());
         } else {
             log.error("");
             //throw new RPCException(RPCErrorEnum.)
         }
+        // 状态
+        out.writeByte(0);
+        // 保留字段
+        out.writeInt(0);
 
         // 指定序列化器，并序列化
         out.writeInt(serializer.getCode());

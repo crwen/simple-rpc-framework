@@ -85,21 +85,23 @@ public class ChannelProvider {
                 channel = future.channel();
                 countDownLatch.countDown();
                 return;
+            } else {
+                if (retry == 0) {
+                    log.error("客户端连接失败：重试次数已用完，放弃连接！");
+                    countDownLatch.countDown();
+                    throw new RPCException(RPCErrorEnum.CLIENT_CONNECT_SERVER_FAILURE);
+                }
+                // 第几次重试
+                int order = (MAX_RETRY_COUNT - retry) + 1;
+                int delay = 1 << order;
+                log.error("{}：连接失败，第 {} 次重试......", new Date(), order);
+
+                // 延迟执行 delay
+                bootstrap.config().group().schedule( () -> {
+                    connect(bootstrap, inetSocketAddress, retry - 1, countDownLatch);
+                }, delay, TimeUnit.SECONDS);
             }
         });
-        if (retry == 0) {
-            log.error("客户端连接失败：重试次数已用完，放弃连接！");
-            countDownLatch.countDown();
-            throw new RPCException(RPCErrorEnum.CLIENT_CONNECT_SERVER_FAILURE);
-        }
-        // 第几次重试
-        int order = (MAX_RETRY_COUNT - retry) + 1;
-        int delay = 1 << order;
-        log.error("{}：连接失败，第 {} 次重试......", new Date(), order);
 
-        // 延迟执行 delay
-        bootstrap.config().group().schedule( () -> {
-            connect(bootstrap, inetSocketAddress, retry - 1, countDownLatch);
-        }, delay, TimeUnit.SECONDS);
     }
 }
