@@ -12,7 +12,10 @@ import top.crwenassert.rpc.serializer.CommonSerializer;
  * @since JDK 1.8
  */
 public interface RPCServer {
-    void start(int port);
+    void start();
 
     void setSerializer(CommonSerializer serializer);
+
+    <T> void publishService(T service, Class<T> serviceClass);
+
 }

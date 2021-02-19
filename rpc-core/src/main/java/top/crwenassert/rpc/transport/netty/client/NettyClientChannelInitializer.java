@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.netty.server;
+package top.crwenassert.rpc.transport.netty.client;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -8,28 +8,28 @@ import top.crwenassert.rpc.codec.CommonEncoder;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 
 /**
- * ClassName: NettyServerChannelInitializer
- * Description: Netty 服务端初始化器
- * date: 2020/12/17 15:23
+ * ClassName: NettyClientChannelInitializer
+ * Description: Netty 客户端初始化器
+ * date: 2020/12/17 15:31
  *
  * @author crwen
- * @create 2020-12-17-15:23
+ * @create 2020-12-17-15:31
  * @since JDK 1.8
  */
-public class NettyServerChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class NettyClientChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    // 序列化器
     private CommonSerializer serializer;
 
-    public NettyServerChannelInitializer(CommonSerializer serializer) {
+    public NettyClientChannelInitializer(CommonSerializer serializer) {
         this.serializer = serializer;
     }
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new CommonEncoder(serializer));
-        pipeline.addLast(new CommonDecoder());
-        pipeline.addLast(new NettyServerHandler());
+        pipeline.addLast(new CommonDecoder())
+                .addLast(new CommonEncoder(serializer))
+                .addLast(new NettyClientHandler());
     }
+
 }

@@ -1,4 +1,4 @@
-package top.crwenassert.rpc;
+package top.crwenassert.rpc.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
@@ -6,6 +6,8 @@ import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.domain.enums.ResponseCode;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.provide.ServiceProvider;
+import top.crwenassert.rpc.provide.ServiceProviderImpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,9 +23,15 @@ import java.lang.reflect.Method;
  */
 @Slf4j
 public class RequestHandler {
+    private static final ServiceProvider serviceProvider;
 
-    public Object handle(RPCRequest rpcRequest, Object service) {
+    static {
+        serviceProvider = new ServiceProviderImpl();
+    }
+
+    public Object handle(RPCRequest rpcRequest) {
         Object result = null;
+        Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
         try {
             result = invokeTargetMethod(rpcRequest, service);
         } catch (IllegalAccessException | InvocationTargetException e) {

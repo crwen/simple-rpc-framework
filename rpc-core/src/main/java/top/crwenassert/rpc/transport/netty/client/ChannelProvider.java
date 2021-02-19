@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.netty.client;
+package top.crwenassert.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

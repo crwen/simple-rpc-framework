@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.socket.util;
+package top.crwenassert.rpc.transport.socket.util;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;

@@ -2,7 +2,7 @@ package top.crwenassert.rpc;
 
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
-import top.crwenassert.rpc.netty.client.NettyClient;
+import top.crwenassert.rpc.transport.netty.client.NettyClient;
 import top.crwenassert.rpc.serializer.JsonSerializer;
 
 /**
@@ -16,7 +16,7 @@ import top.crwenassert.rpc.serializer.JsonSerializer;
  */
 public class TestNettyClient {
     public static void main(String[] args) {
-        RPCClient client = new NettyClient("127.0.0.1",9999);
+        RPCClient client = new NettyClient();
         client.setSerializer(new JsonSerializer());
         //client.setSerializer(new KryoSerializer());
         RPCClientProxy rpcClientProxy = new RPCClientProxy(client);

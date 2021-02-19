@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.netty.client;
+package top.crwenassert.rpc.transport.netty.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

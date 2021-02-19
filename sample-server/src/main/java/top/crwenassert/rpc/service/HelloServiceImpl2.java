@@ -1,27 +1,21 @@
 package top.crwenassert.rpc.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
 
-/**
- * ClassName: HelloServiceImpl
- * Description: 服务提供者 测试
- * date: 2020/11/13 13:33
- *
- * @author crwen
- * @create 2020-11-13-13:33
- * @since JDK 1.8
- */
 @Slf4j
-public class HelloServiceImpl implements HelloService {
+public class HelloServiceImpl2 implements HelloService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HelloServiceImpl2.class);
 
     @Override
     public String hello(MessageObject messageObject) {
         log.info("HelloServiceImpl 收到消息：{}.", messageObject.getMessage());
-        String result = "本次处理来自 Netty 服务：MessageObject id is " + messageObject.getId();
+        String result = "本次处理来自 Socket 服务：MessageObject id is " + messageObject.getId();
         log.info("HelloServiceImpl 返回：{}.", result);
-
         return result;
     }
 }

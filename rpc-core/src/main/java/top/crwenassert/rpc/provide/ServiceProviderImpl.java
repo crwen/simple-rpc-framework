@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.registry;
+package top.crwenassert.rpc.provide;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ClassName: DefaultServiceRegistry
- * Description: 默认的服务注册表
+ * Description: 默认的服务注册表，保存服务本地服务
  * date: 2020/11/14 22:54
  *
  * @author crwen
@@ -18,31 +18,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since JDK 1.8
  */
 @Slf4j
-public class DefaultServiceRegistry implements ServiceRegistry {
+public class ServiceProviderImpl implements ServiceProvider {
 
     private static final Map<String, Object> serviceMap = new ConcurrentHashMap<>();
     private static final Set<String> serviceNames = ConcurrentHashMap.newKeySet();
-
+    private static final Set<String> registeredService = ConcurrentHashMap.newKeySet();
     @Override
-    public <T> void register(T service) {
-        String serviceName = service.getClass().getCanonicalName();
+    public <T> void addServiceProvider(T service, Class<T> serviceClass) {
+        String serviceName = serviceClass.getCanonicalName();
         if (serviceNames.contains(serviceName)) {
             return;
         }
-        serviceNames.add(serviceName);
-        Class<?>[] interfaces = service.getClass().getInterfaces();
-        // don't implement any interface
-        if (interfaces.length == 0) {
-            throw new RPCException(RPCErrorEnum.SERVICE_NOT_IMPLEMENT_ANY_INTERFACE);
-        }
-        for (Class<?> serviceInterface : interfaces) {
-            serviceMap.put(serviceInterface.getCanonicalName(), service);
-        }
-        log.info("向接口：{} 注册服务：{}", interfaces, serviceName);
+
+        registeredService.add(serviceName);
+        serviceMap.put(serviceName, service);
+        log.info("向接口：{} 注册服务：{}", service.getClass().getInterfaces(), serviceName);
     }
 
     @Override
-    public Object getService(String serviceName) {
+    public Object getServiceProvider(String serviceName) {
         Object service = serviceMap.get(serviceName);
         if (service == null) {
             throw new RPCException(RPCErrorEnum.SERVICE_NOT_FOUND, serviceName);

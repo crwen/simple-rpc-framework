@@ -3,7 +3,7 @@ package top.crwenassert.rpc;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
 import top.crwenassert.rpc.serializer.KryoSerializer;
-import top.crwenassert.rpc.socket.client.SocketClient;
+import top.crwenassert.rpc.transport.socket.client.SocketClient;
 
 /**
  * ClassName: TestClient
@@ -16,7 +16,7 @@ import top.crwenassert.rpc.socket.client.SocketClient;
  */
 public class TestClient {
     public static void main(String[] args) {
-        SocketClient client = new SocketClient("127.0.0.1", 9000);
+        SocketClient client = new SocketClient();
         client.setSerializer(new KryoSerializer());
         RPCClientProxy rpcClientProxy = new RPCClientProxy(client);
         HelloService helloService = rpcClientProxy.getProxy(HelloService.class);

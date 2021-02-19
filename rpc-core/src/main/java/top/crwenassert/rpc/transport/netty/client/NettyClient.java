@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.netty.client;
+package top.crwenassert.rpc.transport.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -13,6 +13,8 @@ import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.registry.NacosServiceDiscovery;
+import top.crwenassert.rpc.registry.ServiceDiscovery;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 import top.crwenassert.rpc.util.RPCMessageChecker;
 
@@ -31,14 +33,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class NettyClient implements RPCClient {
 
-    private String host;
-    private int port;
     private static final Bootstrap bootstrap;
+    private final ServiceDiscovery serviceDiscovery;
     private CommonSerializer serializer;
 
-    public NettyClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public NettyClient() {
+        this.serviceDiscovery = new NacosServiceDiscovery();
     }
 
     static {
@@ -58,7 +58,8 @@ public class NettyClient implements RPCClient {
 
         AtomicReference<Object> result = new AtomicReference<>(null);
         try {
-            Channel channel = ChannelProvider.get(new InetSocketAddress(host, port), serializer);
+            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+            Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if (channel.isActive()) {
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if(future1.isSuccess()) {
@@ -73,6 +74,7 @@ public class NettyClient implements RPCClient {
                 RPCMessageChecker.check(rpcRequest, rpcResponse);
                 return rpcResponse.getData();
             } else {
+                channel.close();
                 System.exit(0);
             }
 

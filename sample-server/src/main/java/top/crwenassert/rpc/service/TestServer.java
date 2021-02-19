@@ -1,10 +1,8 @@
 package top.crwenassert.rpc.service;
 
 import top.crwenassert.rpc.api.HelloService;
-import top.crwenassert.rpc.registry.DefaultServiceRegistry;
-import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.KryoSerializer;
-import top.crwenassert.rpc.socket.server.SocketServer;
+import top.crwenassert.rpc.transport.socket.server.SocketServer;
 
 /**
  * ClassName: TestServer
@@ -17,11 +15,9 @@ import top.crwenassert.rpc.socket.server.SocketServer;
  */
 public class TestServer {
     public static void main(String[] args) {
-        HelloService helloService = new HelloServiceImpl();
-        ServiceRegistry serviceRegistry = new DefaultServiceRegistry();
-        serviceRegistry.register(helloService);
-        SocketServer rpcServer = new SocketServer(serviceRegistry);
+        HelloService helloService = new HelloServiceImpl2();
+        SocketServer rpcServer = new SocketServer("127.0.0.1", 9999);
         rpcServer.setSerializer(new KryoSerializer());
-        rpcServer.start(9000);
+        rpcServer.publishService(helloService, HelloService.class);
     }
 }

@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.netty.server;
+package top.crwenassert.rpc.transport.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -12,7 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.provide.ServiceProvider;
+import top.crwenassert.rpc.provide.ServiceProviderImpl;
+import top.crwenassert.rpc.registry.NacosServiceRegistry;
+import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
+
+import java.net.InetSocketAddress;
 
 /**
  * ClassName: NettyServer
@@ -26,11 +32,24 @@ import top.crwenassert.rpc.serializer.CommonSerializer;
 @Slf4j
 public class NettyServer implements RPCServer {
 
+    private final String host;
+    private final int port;
+
+    private final ServiceRegistry serviceRegistry;
+    private final ServiceProvider serviceProvider;
+
     // 序列化器
     private CommonSerializer serializer;
 
+    public NettyServer(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.serviceRegistry = new NacosServiceRegistry();
+        this.serviceProvider = new ServiceProviderImpl();
+    }
+
     @Override
-    public void start(int port) {
+    public void start() {
         if (serializer == null) {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
@@ -48,7 +67,7 @@ public class NettyServer implements RPCServer {
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new NettyServerChannelInitializer(serializer));
 
-            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(host, port).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             log.error("启动服务器时有错误发生: ", e);
@@ -61,5 +80,18 @@ public class NettyServer implements RPCServer {
     @Override
     public void setSerializer(CommonSerializer serializer) {
         this.serializer = serializer;
+    }
+
+    @Override
+    public <T> void publishService(T service, Class<T> serviceClass) {
+        if (serializer == null) {
+            log.error("未设置序列化器");
+            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
+        }
+        // 将服务保存到本地
+        serviceProvider.addServiceProvider(service, serviceClass);
+        // 将服务注册到服务中心
+        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
     }
 }

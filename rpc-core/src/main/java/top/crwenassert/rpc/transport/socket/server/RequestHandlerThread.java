@@ -1,15 +1,15 @@
-package top.crwenassert.rpc.socket.server;
+package top.crwenassert.rpc.transport.socket.server;
 
 import lombok.extern.slf4j.Slf4j;
-import top.crwenassert.rpc.RequestHandler;
+import top.crwenassert.rpc.handler.RequestHandler;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
-import top.crwenassert.rpc.socket.util.ObjectReader;
-import top.crwenassert.rpc.socket.util.ObjectWriter;
+import top.crwenassert.rpc.transport.socket.util.ObjectReader;
+import top.crwenassert.rpc.transport.socket.util.ObjectWriter;
 
 import java.io.*;
 import java.net.Socket;
@@ -47,8 +47,7 @@ public class RequestHandlerThread implements Runnable {
             RPCRequest rpcRequest = (RPCRequest) ObjectReader.readObject(inputStream);
             // 获取服务，并调用相应方法
             String interfaceName = rpcRequest.getInterfaceName();
-            Object service = serviceRegistry.getService(interfaceName);
-            Object result = requestHandler.handle(rpcRequest, service);
+            Object result = requestHandler.handle(rpcRequest);
             // 将调用得到的结果发送出去
             RPCResponse<Object> response = RPCResponse.success(result, rpcRequest.getRequestId());
             ObjectWriter.writeObject(outputStream, response, serializer);

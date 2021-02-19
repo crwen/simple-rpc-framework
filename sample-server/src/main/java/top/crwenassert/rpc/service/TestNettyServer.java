@@ -1,8 +1,8 @@
 package top.crwenassert.rpc.service;
 
-import top.crwenassert.rpc.netty.server.NettyServer;
-import top.crwenassert.rpc.registry.DefaultServiceRegistry;
+import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.serializer.KryoSerializer;
+import top.crwenassert.rpc.transport.netty.server.NettyServer;
 
 /**
  * ClassName: TestNettyServer
@@ -16,10 +16,8 @@ import top.crwenassert.rpc.serializer.KryoSerializer;
 public class TestNettyServer {
     public static void main(String[] args) {
         HelloServiceImpl helloService = new HelloServiceImpl();
-        DefaultServiceRegistry registry = new DefaultServiceRegistry();
-        registry.register(helloService);
-        NettyServer server = new NettyServer();
+        NettyServer server = new NettyServer("127.0.0.1", 9999);
         server.setSerializer(new KryoSerializer());
-        server.start(9999);
+        server.publishService(helloService, HelloService.class);
     }
 }
