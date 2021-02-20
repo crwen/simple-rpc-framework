@@ -5,12 +5,13 @@ import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.handler.RequestHandler;
+import top.crwenassert.rpc.hook.ShutdownHook;
 import top.crwenassert.rpc.provide.ServiceProvider;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
 import top.crwenassert.rpc.registry.NacosServiceRegistry;
 import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
-import top.crwenassert.rpc.util.ThreadPoolFactory;
+import top.crwenassert.rpc.factory.ThreadPoolFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,19 +34,24 @@ public class SocketServer implements RPCServer {
     private final String host;
     private final int port;
     private ExecutorService threadPool;
-    private RequestHandler requestHandler = new RequestHandler();
-    private CommonSerializer serializer;
+    private final RequestHandler requestHandler = new RequestHandler();
+    private final CommonSerializer serializer;
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceProvider serviceProvider;
 
 
     public SocketServer(String host, int port) {
+        this(host, port, DEFAULT_SERIALIZER);
+    }
+
+    public SocketServer(String host, int port, Integer serializer) {
         this.host = host;
         this.port = port;
         threadPool = ThreadPoolFactory.createDefaultThreadPool("socket-rpc-server");
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     /**
@@ -56,12 +62,14 @@ public class SocketServer implements RPCServer {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
         }
-        try(ServerSocket server = new ServerSocket(port);) {
+        try(ServerSocket serverSocket = new ServerSocket()) {
+            serverSocket.bind(new InetSocketAddress(host, port));
             log.info("服务器启动...");
+            ShutdownHook.getShutdownHook().addClearAllHook();
             Socket socket;
-            while ((socket = server.accept()) != null) {
+            while ((socket = serverSocket.accept()) != null) {
                 log.info("消费者连接： {}:{}",socket.getInetAddress(), socket.getPort());
-                threadPool.execute(new RequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
+                threadPool.execute(new SocketRequestHandlerThread(socket, requestHandler, serviceRegistry, serializer));
             }
             threadPool.shutdown();
         } catch (IOException e) {
@@ -69,10 +77,6 @@ public class SocketServer implements RPCServer {
         }
     }
 
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
-    }
 
     @Override
     public <T> void publishService(T service, Class<T> serviceClass) {

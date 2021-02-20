@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.hook.ShutdownHook;
 import top.crwenassert.rpc.provide.ServiceProvider;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
 import top.crwenassert.rpc.registry.NacosServiceRegistry;
@@ -34,22 +35,29 @@ public class NettyServer implements RPCServer {
 
     private final String host;
     private final int port;
-
+    // 服务注册中心
     private final ServiceRegistry serviceRegistry;
+    // 本地服务提供者
     private final ServiceProvider serviceProvider;
 
     // 序列化器
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
 
     public NettyServer(String host, int port) {
+        this(host, port, DEFAULT_SERIALIZER);
+    }
+
+    public NettyServer(String host, int port, Integer serializer) {
         this.host = host;
         this.port = port;
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     @Override
     public void start() {
+        ShutdownHook.getShutdownHook().addClearAllHook();
         if (serializer == null) {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
@@ -77,10 +85,6 @@ public class NettyServer implements RPCServer {
         }
     }
 
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
-    }
 
     @Override
     public <T> void publishService(T service, Class<T> serviceClass) {

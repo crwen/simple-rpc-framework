@@ -1,7 +1,7 @@
 package top.crwenassert.rpc.service;
 
 import top.crwenassert.rpc.api.HelloService;
-import top.crwenassert.rpc.serializer.KryoSerializer;
+import top.crwenassert.rpc.serializer.CommonSerializer;
 import top.crwenassert.rpc.transport.socket.server.SocketServer;
 
 /**
@@ -16,8 +16,7 @@ import top.crwenassert.rpc.transport.socket.server.SocketServer;
 public class TestServer {
     public static void main(String[] args) {
         HelloService helloService = new HelloServiceImpl2();
-        SocketServer rpcServer = new SocketServer("127.0.0.1", 9999);
-        rpcServer.setSerializer(new KryoSerializer());
+        SocketServer rpcServer = new SocketServer("127.0.0.1", 9999, CommonSerializer.JSON_SERIALIZER);
         rpcServer.publishService(helloService, HelloService.class);
     }
 }

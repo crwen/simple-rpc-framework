@@ -34,19 +34,25 @@ import java.util.concurrent.atomic.AtomicReference;
 public class NettyClient implements RPCClient {
 
     private static final Bootstrap bootstrap;
+    private static final EventLoopGroup group;
     private final ServiceDiscovery serviceDiscovery;
-    private CommonSerializer serializer;
-
-    public NettyClient() {
-        this.serviceDiscovery = new NacosServiceDiscovery();
-    }
+    private final CommonSerializer serializer;
 
     static {
-        EventLoopGroup group = new NioEventLoopGroup();
+        group = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
         bootstrap.group(group)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true);
+    }
+
+    public NettyClient() {
+        this(DEFAULT_SERIALIZER);
+    }
+
+    public NettyClient(Integer serializer) {
+        this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     @Override
@@ -61,6 +67,7 @@ public class NettyClient implements RPCClient {
             InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if (channel.isActive()) {
+                // 发送请求
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if(future1.isSuccess()) {
                         log.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
@@ -72,20 +79,17 @@ public class NettyClient implements RPCClient {
                 AttributeKey<RPCResponse> key = AttributeKey.valueOf("rpcResponse" + rpcRequest.getRequestId());
                 RPCResponse rpcResponse = channel.attr(key).get();
                 RPCMessageChecker.check(rpcRequest, rpcResponse);
-                return rpcResponse.getData();
+                result.set(rpcResponse.getData());
             } else {
-                channel.close();
-                System.exit(0);
+                group.shutdownGracefully();
+                return null;
             }
 
         } catch (InterruptedException e) {
             log.error("发送消息时有错误发生: ", e);
+            Thread.currentThread().interrupt();
         }
         return result.get();
     }
 
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
-    }
 }

@@ -3,9 +3,7 @@ package top.crwenassert.rpc.handler;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
-import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.domain.enums.ResponseCode;
-import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.provide.ServiceProvider;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
 
@@ -30,27 +28,21 @@ public class RequestHandler {
     }
 
     public Object handle(RPCRequest rpcRequest) {
-        Object result = null;
         Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
-        try {
-            result = invokeTargetMethod(rpcRequest, service);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            log.error("调用或发送时发生错误：", e);
-            throw new RPCException(RPCErrorEnum.SERVICE_INVOCATION_FAILURE);
-        }
-        return result;
+        return invokeTargetMethod(rpcRequest, service);
     }
 
 
 
-    private Object invokeTargetMethod(RPCRequest rpcRequest, Object service) throws InvocationTargetException, IllegalAccessException {
-        Method method;
+    private Object invokeTargetMethod(RPCRequest rpcRequest, Object service){
+        Object result;
         try {
-            method = service.getClass().getDeclaredMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            Method method = service.getClass().getDeclaredMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            result = method.invoke(service, rpcRequest.getParameters());
             log.info("服务：{} 成功调用方法：{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             return RPCResponse.fail(ResponseCode.METHOD_NOT_FOUND, rpcRequest.getRequestId());
         }
-        return method.invoke(service, rpcRequest.getParameters());
+        return result;
     }
 }

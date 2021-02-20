@@ -33,10 +33,15 @@ import java.net.Socket;
 public class SocketClient implements RPCClient {
 
     private final ServiceDiscovery serviceDiscovery;
-    private CommonSerializer serializer;
+    private final CommonSerializer serializer;
 
     public SocketClient() {
+        this(DEFAULT_SERIALIZER);
+    }
+
+    public SocketClient(Integer serializer) {
         this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializer);
     }
 
     @Override
@@ -71,8 +76,4 @@ public class SocketClient implements RPCClient {
         }
     }
 
-    @Override
-    public void setSerializer(CommonSerializer serializer) {
-        this.serializer = serializer;
-    }
 }

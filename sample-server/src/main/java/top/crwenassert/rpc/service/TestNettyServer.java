@@ -1,7 +1,7 @@
 package top.crwenassert.rpc.service;
 
 import top.crwenassert.rpc.api.HelloService;
-import top.crwenassert.rpc.serializer.KryoSerializer;
+import top.crwenassert.rpc.serializer.CommonSerializer;
 import top.crwenassert.rpc.transport.netty.server.NettyServer;
 
 /**
@@ -16,8 +16,7 @@ import top.crwenassert.rpc.transport.netty.server.NettyServer;
 public class TestNettyServer {
     public static void main(String[] args) {
         HelloServiceImpl helloService = new HelloServiceImpl();
-        NettyServer server = new NettyServer("127.0.0.1", 9999);
-        server.setSerializer(new KryoSerializer());
+        NettyServer server = new NettyServer("127.0.0.1", 9999, CommonSerializer.JSON_SERIALIZER);
         server.publishService(helloService, HelloService.class);
     }
 }

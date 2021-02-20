@@ -13,7 +13,9 @@ import top.crwenassert.rpc.serializer.CommonSerializer;
  * @since JDK 1.8
  */
 public interface RPCClient {
+
+    int DEFAULT_SERIALIZER = CommonSerializer.KRYO_SERIALIZER;
+
     Object sendRequest(RPCRequest rpcRequest);
 
-    void setSerializer(CommonSerializer serializer);
 }

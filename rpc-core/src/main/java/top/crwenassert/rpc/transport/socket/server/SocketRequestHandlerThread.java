@@ -24,18 +24,16 @@ import java.net.Socket;
  * @since JDK 1.8
  */
 @Slf4j
-public class RequestHandlerThread implements Runnable {
+public class SocketRequestHandlerThread implements Runnable {
 
     private Socket socket;
     private RequestHandler requestHandler;
-    private ServiceRegistry serviceRegistry;
     private CommonSerializer serializer;
 
-    public RequestHandlerThread(Socket socket, RequestHandler requestHandler,
-                                ServiceRegistry serviceRegistry, CommonSerializer serializer) {
+    public SocketRequestHandlerThread(Socket socket, RequestHandler requestHandler,
+                                      ServiceRegistry serviceRegistry, CommonSerializer serializer) {
         this.socket = socket;
         this.requestHandler = requestHandler;
-        this.serviceRegistry = serviceRegistry;
         this.serializer = serializer;
     }
 
@@ -46,7 +44,6 @@ public class RequestHandlerThread implements Runnable {
             // 读取请求
             RPCRequest rpcRequest = (RPCRequest) ObjectReader.readObject(inputStream);
             // 获取服务，并调用相应方法
-            String interfaceName = rpcRequest.getInterfaceName();
             Object result = requestHandler.handle(rpcRequest);
             // 将调用得到的结果发送出去
             RPCResponse<Object> response = RPCResponse.success(result, rpcRequest.getRequestId());

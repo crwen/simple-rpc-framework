@@ -1,7 +1,6 @@
 package top.crwenassert.rpc.registry;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
@@ -21,16 +20,12 @@ import java.net.InetSocketAddress;
 @Slf4j
 public class NacosServiceRegistry implements ServiceRegistry{
 
-    private final NamingService namingService ;
 
-    public NacosServiceRegistry() {
-        this.namingService = NacosUtil.getNacosNamingService();
-    }
 
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
         try {
-            NacosUtil.registerService(namingService, serviceName, inetSocketAddress);
+            NacosUtil.registerService(serviceName, inetSocketAddress);
         } catch (NacosException e) {
             log.error("注册服务时发生错误：", e);
             throw new RPCException(RPCErrorEnum.REGISTER_SERVICE_FAILED);
