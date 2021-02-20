@@ -22,6 +22,11 @@ public class RPCMessageChecker {
 
     private RPCMessageChecker() {}
 
+    /**
+     *  检查请求与响应是否匹配
+     * @param rpcRequest 请求
+     * @param rpcResponse 响应
+     */
     public static void check(RPCRequest rpcRequest, RPCResponse rpcResponse) {
         if (rpcResponse == null) {
             log.error("调用服务失败，serviceName：{}", rpcRequest.getInterfaceName());
@@ -29,12 +34,14 @@ public class RPCMessageChecker {
                     INTERFACE_NAME + ": " + rpcRequest.getInterfaceName());
         }
 
+        // 检查 id
         if (!rpcRequest.getRequestId().equals(rpcResponse.getRequestId())) {
             log.error("响应与请求不匹配,requestId:{},responseId:{}", rpcRequest.getRequestId(), rpcResponse.getRequestId());
             throw new RPCException(RPCErrorEnum.RESPONSE_NOT_MATCH,
                     INTERFACE_NAME + ": " + rpcRequest.getInterfaceName());
         }
 
+        // 检查状态
         if (rpcResponse.getStatusCode() == null) {
             log.error("调用服务失败,serviceName:{},RpcResponse:{}", rpcRequest.getInterfaceName(), rpcResponse);
             throw new RPCException(RPCErrorEnum.SERVICE_INVOCATION_FAILURE,

@@ -27,17 +27,28 @@ public class RequestHandler {
         serviceProvider = new ServiceProviderImpl();
     }
 
+    /**
+     *  处理 rpc 请求
+     * @param rpcRequest rpc 请求
+     * @return 请求执行结果
+     */
     public Object handle(RPCRequest rpcRequest) {
         Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
         return invokeTargetMethod(rpcRequest, service);
     }
 
-
-
+    /**
+     *  调用目标方法
+     *
+     * @param rpcRequest rpc 请求
+     * @param service 服务
+     * @return 方法执行结构
+     */
     private Object invokeTargetMethod(RPCRequest rpcRequest, Object service){
         Object result;
         try {
             Method method = service.getClass().getDeclaredMethod(rpcRequest.getMethodName(), rpcRequest.getParamTypes());
+            // 执行方法
             result = method.invoke(service, rpcRequest.getParameters());
             log.info("服务：{} 成功调用方法：{}", rpcRequest.getInterfaceName(), rpcRequest.getMethodName());
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

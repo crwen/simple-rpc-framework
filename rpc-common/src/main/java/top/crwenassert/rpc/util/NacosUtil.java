@@ -35,6 +35,11 @@ public class NacosUtil {
         namingService = getNacosNamingService();
     }
 
+    /**
+     *  创建 Nacos 命名服务
+     *
+     * @return
+     */
     public static NamingService getNacosNamingService() {
         try {
             return NamingFactory.createNamingService(SERVER_ADDR);
@@ -44,16 +49,34 @@ public class NacosUtil {
         }
     }
 
+    /**
+     *  注册服务
+     *
+     * @param serviceName 服务名称
+     * @param address 服务网络地址
+     * @throws NacosException
+     */
     public static void registerService(String serviceName, InetSocketAddress address) throws NacosException {
         namingService.registerInstance(serviceName, address.getHostName(), address.getPort());
         NacosUtil.address = address;
         serviceNames.add(serviceName);
     }
 
+    /**
+     *  根据服务名称获取服务列表
+     *
+     * @param serviceName 服务名称
+     * @return 服务列表
+     * @throws NacosException
+     */
     public static List<Instance> getAllInstance(String serviceName) throws NacosException {
         return namingService.getAllInstances(serviceName);
     }
 
+    /**
+     *  清除已有的注册信息
+     *
+     */
     public static void clearRegistry() {
         if (!serviceNames.isEmpty() && address != null) {
             String host = address.getHostName();
@@ -63,6 +86,7 @@ public class NacosUtil {
                 String serviceName = iterator.next();
                 try {
                     namingService.deregisterInstance(serviceName, host, port);
+                    log.info("注销服务 {} ", serviceName);
                 } catch (NacosException e) {
                     log.error("注销服务 {} 失败", serviceName, e);
                 }

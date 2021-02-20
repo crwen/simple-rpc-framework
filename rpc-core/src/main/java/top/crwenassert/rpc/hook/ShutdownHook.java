@@ -26,8 +26,11 @@ public class ShutdownHook {
 
     public void addClearAllHook() {
         log.info("关闭后将自动注销所有服务");
+        // 在jvm中增加一个关闭的钩子，当jvm关闭的时候 会执行
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // 注销服务
             NacosUtil.clearRegistry();
+            // 关闭线程池
             ThreadPoolFactory.shutDownAll();
         }));
     }

@@ -51,6 +51,10 @@ public class NettyClient implements RPCClient {
     }
 
     public NettyClient(Integer serializer) {
+        if (CommonSerializer.getByCode(serializer) == null) {
+            log.error("不支持该序列化器");
+            throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
+        }
         this.serviceDiscovery = new NacosServiceDiscovery();
         this.serializer = CommonSerializer.getByCode(serializer);
     }

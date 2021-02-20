@@ -26,6 +26,12 @@ public class RPCClientProxy implements InvocationHandler {
         this.client = client;
     }
 
+    /**
+     *  利用 JDK 动态代理获取代理对象
+     * @param clazz 要代理的对象
+     * @param <T>
+     * @return 代理对象
+     */
     @SuppressWarnings("unchecked")
     public <T> T getProxy(Class<T> clazz) {
         return (T) Proxy.newProxyInstance(clazz.getClassLoader(),

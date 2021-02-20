@@ -48,6 +48,10 @@ public class NettyServer implements RPCServer {
     }
 
     public NettyServer(String host, int port, Integer serializer) {
+        if (CommonSerializer.getByCode(serializer) == null) {
+            log.error("不支持该序列化器");
+            throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
+        }
         this.host = host;
         this.port = port;
         this.serviceRegistry = new NacosServiceRegistry();
@@ -57,11 +61,12 @@ public class NettyServer implements RPCServer {
 
     @Override
     public void start() {
-        ShutdownHook.getShutdownHook().addClearAllHook();
         if (serializer == null) {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
         }
+        // 启动前先清除服务
+        ShutdownHook.getShutdownHook().addClearAllHook();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -96,6 +101,5 @@ public class NettyServer implements RPCServer {
         serviceProvider.addServiceProvider(service, serviceClass);
         // 将服务注册到服务中心
         serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        start();
     }
 }

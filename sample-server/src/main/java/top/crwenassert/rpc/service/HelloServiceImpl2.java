@@ -13,9 +13,9 @@ public class HelloServiceImpl2 implements HelloService {
 
     @Override
     public String hello(MessageObject messageObject) {
-        log.info("HelloServiceImpl 收到消息：{}.", messageObject.getMessage());
-        String result = "本次处理来自 Socket 服务：MessageObject id is " + messageObject.getId();
-        log.info("HelloServiceImpl 返回：{}.", result);
+        log.info("HelloServiceImpl2 收到消息：{}.", messageObject.getMessage());
+        String result = "MessageObject id is " + messageObject.getId();
+        log.info("HelloServiceImpl2 返回：{}.", result);
         return result;
     }
 }

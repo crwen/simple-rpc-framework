@@ -11,7 +11,20 @@ package top.crwenassert.rpc.provide;
  */
 public interface ServiceProvider {
 
+    /**
+     *  保存本地服务
+     *
+     * @param service 服务实体
+     * @param serviceClass 服务 Class
+     * @param <T>
+     */
     <T> void addServiceProvider(T service, Class<T> serviceClass);
 
+    /**
+     *  根据服务名称获取服务
+     *
+     * @param serviceName 服务名称
+     * @return
+     */
     Object getServiceProvider(String serviceName);
 }

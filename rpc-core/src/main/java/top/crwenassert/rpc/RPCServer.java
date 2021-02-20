@@ -15,8 +15,19 @@ public interface RPCServer {
 
     int DEFAULT_SERIALIZER = CommonSerializer.KRYO_SERIALIZER;
 
+    /**
+     *  启动服务
+     *
+     */
     void start();
 
+    /**
+     *  发布服务
+     *
+     * @param service
+     * @param serviceClass
+     * @param <T>
+     */
     <T> void publishService(T service, Class<T> serviceClass);
 
 }

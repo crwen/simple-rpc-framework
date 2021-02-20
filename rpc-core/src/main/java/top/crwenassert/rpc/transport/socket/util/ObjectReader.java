@@ -13,8 +13,7 @@ import java.io.InputStream;
 
 /**
  * ClassName: ObjectReader
- * Description: Socket 方式从输入流中读取字节并反序列化
- * date: 2020/12/17 15:44
+ * Description: Socket 方式从输入流中读取字节并反序列date: 2020/12/17 15:44
  *
  * @author crwen
  * @create 2020-12-17-15:44
@@ -24,6 +23,13 @@ import java.io.InputStream;
 public class ObjectReader {
     private static final int MAGIC_NUMBER = 0xCAFEBABE;
 
+    /**
+     *  从输入流中读取数据并反序列化
+     *
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
     public static Object readObject(InputStream inputStream) throws IOException {
         byte[] numberBytes = new byte[4];
         // 读取魔数
@@ -64,6 +70,12 @@ public class ObjectReader {
         return serializer.deserialize(bytes, packageClass);
     }
 
+    /**
+     *  将字节数组转化为 int 类型
+     *
+     * @param src
+     * @return
+     */
     private static int bytesToInt(byte[] src) {
         int value;
         value = (src[0] & 0xFF)

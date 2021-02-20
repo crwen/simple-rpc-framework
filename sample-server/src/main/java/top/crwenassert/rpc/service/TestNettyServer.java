@@ -16,7 +16,9 @@ import top.crwenassert.rpc.transport.netty.server.NettyServer;
 public class TestNettyServer {
     public static void main(String[] args) {
         HelloServiceImpl helloService = new HelloServiceImpl();
+        HelloServiceImpl2 helloService2 = new HelloServiceImpl2();
         NettyServer server = new NettyServer("127.0.0.1", 9999, CommonSerializer.JSON_SERIALIZER);
         server.publishService(helloService, HelloService.class);
+        server.start();
     }
 }

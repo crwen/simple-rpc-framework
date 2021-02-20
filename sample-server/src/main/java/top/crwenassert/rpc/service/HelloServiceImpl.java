@@ -19,7 +19,7 @@ public class HelloServiceImpl implements HelloService {
     @Override
     public String hello(MessageObject messageObject) {
         log.info("HelloServiceImpl 收到消息：{}.", messageObject.getMessage());
-        String result = "本次处理来自 Netty 服务：MessageObject id is " + messageObject.getId();
+        String result = "MessageObject id is " + messageObject.getId();
         log.info("HelloServiceImpl 返回：{}.", result);
 
         return result;

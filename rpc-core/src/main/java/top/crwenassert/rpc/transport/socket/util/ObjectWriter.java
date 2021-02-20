@@ -13,7 +13,7 @@ import java.io.OutputStream;
 
 /**
  * ClassName: ObjectWriter
- * Description: Socket 方式从输入流中写入字节并序列化
+ * Description: Socket 方式从输出流中写入字节并序列化
  * date: 2020/12/17 15:53
  *
  * @author crwen
@@ -25,6 +25,14 @@ public class ObjectWriter {
 
     private static final int MAGIC_NUMBER = 0xCAFEBABE;
 
+    /**
+     *  从输出流中写入数据并序列化
+     *
+     * @param outputStream
+     * @param object
+     * @param serializer
+     * @throws IOException
+     */
     public static void writeObject(OutputStream outputStream, Object object, CommonSerializer serializer) throws IOException {
         outputStream.write(intToBytes(MAGIC_NUMBER));
         if (object instanceof RPCRequest) {
@@ -43,6 +51,12 @@ public class ObjectWriter {
         outputStream.flush();
     }
 
+    /**
+     *  将 int 类型的数据转化为 byte 字节数组
+     *
+     * @param value
+     * @return
+     */
     private static byte[] intToBytes(int value) {
         byte[] des = new byte[4];
         des[3] =  (byte) ((value>>24) & 0xFF);

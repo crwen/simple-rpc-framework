@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 
 /**
  * ClassName: NacosServiceRegistry
- * Description:
+ * Description: Nacos 服务注册中心
  * date: 2021/2/18 23:20
  *
  * @author crwen
@@ -19,8 +19,6 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class NacosServiceRegistry implements ServiceRegistry{
-
-
 
     @Override
     public void register(String serviceName, InetSocketAddress inetSocketAddress) {
