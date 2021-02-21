@@ -69,7 +69,7 @@ public class SocketClient implements RPCClient {
                         " service: " + rpcRequest.getInterfaceName());
             }
             RPCMessageChecker.check(rpcRequest, rpcResponse);
-            return rpcResponse.getData();
+            return rpcResponse;
         } catch (IOException  e) {
             log.error("服务调用发生错误: ", e);
             throw new RPCException("服务调用失败: ", e);

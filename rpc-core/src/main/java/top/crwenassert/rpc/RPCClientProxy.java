@@ -2,11 +2,16 @@ package top.crwenassert.rpc;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
+import top.crwenassert.rpc.domain.dto.RPCResponse;
+import top.crwenassert.rpc.transport.netty.client.NettyClient;
+import top.crwenassert.rpc.transport.socket.client.SocketClient;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * ClassName: RPCClientProxy
@@ -38,11 +43,35 @@ public class RPCClientProxy implements InvocationHandler {
                 new Class<?>[] {clazz}, this);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         log.info("调用方法: {}#{}", method.getDeclaringClass().getName(), method.getName());
-        RPCRequest rpcRequest = new RPCRequest(UUID.randomUUID().toString(), method.getDeclaringClass().getName(),
-                method.getName(), args, method.getParameterTypes());
-        return client.sendRequest(rpcRequest);
+        RPCRequest rpcRequest = RPCRequest.builder()
+                .requestId(UUID.randomUUID().toString())
+                .interfaceName(method.getDeclaringClass().getName())
+                .methodName(method.getName())
+                .parameters(args)
+                .paramTypes(method.getParameterTypes())
+                .heartBeat(false)
+                .build();
+
+        Object result = null;
+
+        if (client instanceof NettyClient) {
+            CompletableFuture<RPCResponse> completableFuture = ((NettyClient) client).sendRequest(rpcRequest);
+            try {
+                result = completableFuture.get().getData();
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("方法调用请求发送失败", e);
+                return null;
+            }
+        }
+
+        if (client instanceof SocketClient) {
+            RPCResponse rpcResponse = (RPCResponse) client.sendRequest(rpcRequest);
+            result = rpcResponse.getData();
+        }
+        return result;
     }
 }

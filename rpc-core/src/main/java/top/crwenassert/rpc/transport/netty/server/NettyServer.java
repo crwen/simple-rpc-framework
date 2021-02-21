@@ -101,5 +101,6 @@ public class NettyServer implements RPCServer {
         serviceProvider.addServiceProvider(service, serviceClass);
         // 将服务注册到服务中心
         serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
+        start();
     }
 }

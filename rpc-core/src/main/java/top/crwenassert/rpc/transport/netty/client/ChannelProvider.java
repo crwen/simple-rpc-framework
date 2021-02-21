@@ -8,14 +8,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
-import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * ClassName: ChannelProvider
@@ -32,18 +31,30 @@ public class ChannelProvider {
     private static EventLoopGroup eventLoopGroup;
     private static Bootstrap bootstrap = initializeBootstrap();
 
-    private static final int MAX_RETRY_COUNT = 5;
-    private static Channel channel = null;
+    private static Map<String, Channel> channelMap = new ConcurrentHashMap<>();
 
-    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) {
-        bootstrap.handler(new NettyClientChannelInitializer(serializer));
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        try {
-            connect(bootstrap, inetSocketAddress, countDownLatch);
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            log.error("获取 channel 是发生错误：", e);
+    //private static final int MAX_RETRY_COUNT = 5;
+
+    public static Channel get(InetSocketAddress inetSocketAddress, CommonSerializer serializer) throws InterruptedException {
+        String key = inetSocketAddress.toString() + serializer.getCode();
+        if (channelMap.containsKey(key)) {
+            Channel channel = channelMap.get(key);
+            if (channelMap != null && channel.isActive()) {
+                return channel;
+            } else {
+                channelMap.remove(key);
+            }
         }
+        bootstrap.handler(new NettyClientChannelInitializer(serializer));
+        Channel channel = null;
+        try {
+            channel = connect(bootstrap, inetSocketAddress);
+        } catch (ExecutionException e) {
+            log.error("连接库客户端时发生错误 ", e);
+            return null;
+        }
+        channelMap.put(key, channel);
+
         return channel;
     }
 
@@ -70,38 +81,42 @@ public class ChannelProvider {
      *  建立连接
      * @param bootstrap 启动器
      * @param inetSocketAddress 服务端地址
-     * @param countDownLatch 用于重连计数
      */
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress,
-                                CountDownLatch countDownLatch) {
-        connect(bootstrap,inetSocketAddress,MAX_RETRY_COUNT, countDownLatch);
-    }
-
-    private static void connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, int retry,
-                                CountDownLatch countDownLatch) {
+    private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress) throws ExecutionException, InterruptedException {
+        CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 log.info("客户端连接成功！");
-                channel = future.channel();
-                countDownLatch.countDown();
-                return;
+                completableFuture.complete(future.channel());
             } else {
-                if (retry == 0) {
-                    log.error("客户端连接失败：重试次数已用完，放弃连接！");
-                    countDownLatch.countDown();
-                    throw new RPCException(RPCErrorEnum.CLIENT_CONNECT_SERVER_FAILURE);
-                }
-                // 第几次重试
-                int order = (MAX_RETRY_COUNT - retry) + 1;
-                int delay = 1 << order;
-                log.error("{}：连接失败，第 {} 次重试......", new Date(), order);
-
-                // 延迟执行 delay
-                bootstrap.config().group().schedule( () -> {
-                    connect(bootstrap, inetSocketAddress, retry - 1, countDownLatch);
-                }, delay, TimeUnit.SECONDS);
+                throw new IllegalStateException();
             }
         });
-
+        return completableFuture.get();
     }
+
+    //private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, int retry,) {
+    //    bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
+    //        if (future.isSuccess()) {
+    //            log.info("客户端连接成功！");
+    //            channel = future.channel();
+    //            return;
+    //        } else {
+    //            if (retry == 0) {
+    //                log.error("客户端连接失败：重试次数已用完，放弃连接！");
+    //                throw new RPCException(RPCErrorEnum.CLIENT_CONNECT_SERVER_FAILURE);
+    //            }
+    //            // 第几次重试
+    //            int order = (MAX_RETRY_COUNT - retry) + 1;
+    //            int delay = 1 << order;
+    //            log.error("{}：连接失败，第 {} 次重试......", new Date(), order);
+    //
+    //            // 延迟执行 delay
+    //            bootstrap.config().group().schedule( () -> {
+    //                connect(bootstrap, inetSocketAddress, retry - 1);
+    //            }, delay, TimeUnit.SECONDS);
+    //        }
+    //    });
+    //    return channel;
+    //}
 }

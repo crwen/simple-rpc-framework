@@ -1,7 +1,6 @@
 package top.crwenassert.rpc.registry;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
@@ -27,6 +26,10 @@ public class NacosServiceDiscovery implements ServiceDiscovery{
     public InetSocketAddress lookupService(String serviceName) {
         try {
             List<Instance> instances = NacosUtil.getAllInstance(serviceName);
+            if (instances == null || instances.size() == 0) {
+                log.error("找不到该服务：", serviceName);
+                throw new RPCException(RPCErrorEnum.SERVICE_NOT_FOUND);
+            }
             Instance instance = instances.get(0);
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (NacosException e) {

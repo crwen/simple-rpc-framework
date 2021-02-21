@@ -1,18 +1,15 @@
 package top.crwenassert.rpc.transport.netty.server;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.factory.SingletonFactory;
 import top.crwenassert.rpc.handler.RequestHandler;
-import top.crwenassert.rpc.factory.ThreadPoolFactory;
-
-import java.util.concurrent.ExecutorService;
 
 /**
  * ClassName: NettyServerHandler
@@ -27,29 +24,32 @@ import java.util.concurrent.ExecutorService;
 public class NettyServerHandler extends SimpleChannelInboundHandler<RPCRequest> {
 
     private final RequestHandler requestHandler;
-    private static final String THREAD_NAME_PREFIX = "netty-server-handler";
-    private final ExecutorService threadPool;
 
 
     public NettyServerHandler() {
         this.requestHandler = SingletonFactory.getInstance(RequestHandler.class);
-        this.threadPool = ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RPCRequest msg) throws Exception {
-        threadPool.execute(() -> {
-            try {
-                log.info("服务器接收到请求: {}", msg);
-                // handler
-                Object result = requestHandler.handle(msg);
-                // 回送
-                ChannelFuture future = ctx.writeAndFlush(RPCResponse.success(result, msg.getRequestId()));
-                future.addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-            } finally {
-                ReferenceCountUtil.release(msg);
+
+        try {
+            if (msg.getHeartBeat()) {
+                log.info("接收到客户端心跳包...");
+                return;
             }
-        });
+            log.info("服务器接收到请求: {}", msg);
+            // handler
+            Object result = requestHandler.handle(msg);
+            if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                // 回送
+                ctx.writeAndFlush(RPCResponse.success(result, msg.getRequestId()));
+            } else {
+                log.error("channel 不可写");
+            }
+        }finally {
+            ReferenceCountUtil.release(msg);
+        }
     }
 
     @Override
@@ -59,4 +59,17 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RPCRequest> 
         ctx.close();
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+            // 读空闲
+            if (state == IdleState.READER_IDLE) {
+                log.info("读空闲，断开连接...");
+                ctx.channel().close();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
 }

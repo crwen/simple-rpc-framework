@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 public class ShutdownHook {
-    private final ExecutorService threadPool = ThreadPoolFactory.createDefaultThreadPool("shutdown-hook");
     private static final ShutdownHook shutdownHook = new ShutdownHook();
 
     public static ShutdownHook getShutdownHook() {
