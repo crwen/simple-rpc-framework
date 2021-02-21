@@ -86,7 +86,7 @@ public class ChannelProvider {
         CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
         bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
-                log.info("客户端连接成功！");
+                log.info("客户端连接 【{}】成功！", inetSocketAddress);
                 completableFuture.complete(future.channel());
             } else {
                 throw new IllegalStateException();

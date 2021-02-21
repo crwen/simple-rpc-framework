@@ -20,7 +20,9 @@ public class TestClient {
         RPCClientProxy rpcClientProxy = new RPCClientProxy(client);
         HelloService helloService = rpcClientProxy.getProxy(HelloService.class);
         MessageObject object = new MessageObject(12, "this is message");
-        String res = helloService.hello(object);
-        System.out.println(res);
+        for (int i = 0; i < 20; i++) {
+            String res = helloService.hello(object);
+            System.out.println(res);
+        }
     }
 }

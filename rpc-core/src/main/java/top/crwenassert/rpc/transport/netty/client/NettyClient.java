@@ -13,6 +13,7 @@ import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.factory.SingletonFactory;
+import top.crwenassert.rpc.loadbalancer.LoadBalancer;
 import top.crwenassert.rpc.registry.NacosServiceDiscovery;
 import top.crwenassert.rpc.registry.ServiceDiscovery;
 import top.crwenassert.rpc.serializer.CommonSerializer;
@@ -50,12 +51,26 @@ public class NettyClient implements RPCClient {
         this(DEFAULT_SERIALIZER);
     }
 
+    public NettyClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
+    }
+
     public NettyClient(Integer serializer) {
         if (CommonSerializer.getByCode(serializer) == null) {
             log.error("不支持该序列化器");
             throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
         }
         this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializer);
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+    }
+
+    public NettyClient(Integer serializer, LoadBalancer loadBalancer) {
+        if (CommonSerializer.getByCode(serializer) == null) {
+            log.error("不支持该序列化器");
+            throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
+        }
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
         this.serializer = CommonSerializer.getByCode(serializer);
         this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
     }
@@ -75,7 +90,7 @@ public class NettyClient implements RPCClient {
                 // 发送请求
                 channel.writeAndFlush(rpcRequest).addListener((ChannelFutureListener) future1 -> {
                     if(future1.isSuccess()) {
-                        log.info(String.format("客户端发送消息: %s", rpcRequest.toString()));
+                        log.info(String.format("客户端向 【%s】 发送消息: %s", inetSocketAddress, rpcRequest.toString()));
                     } else {
                         future1.channel().close();
                         resultFuture.completeExceptionally(future1.cause());

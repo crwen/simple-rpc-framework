@@ -5,6 +5,8 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.loadbalancer.LoadBalancer;
+import top.crwenassert.rpc.loadbalancer.RandomLoadBalancer;
 import top.crwenassert.rpc.util.NacosUtil;
 
 import java.net.InetSocketAddress;
@@ -22,6 +24,20 @@ import java.util.List;
 @Slf4j
 public class NacosServiceDiscovery implements ServiceDiscovery{
 
+    private final LoadBalancer loadBalancer;
+
+    public NacosServiceDiscovery() {
+        this(null);
+    }
+
+    public NacosServiceDiscovery(LoadBalancer loadBalancer) {
+        if (loadBalancer == null) {
+            this.loadBalancer = new RandomLoadBalancer();
+        } else {
+            this.loadBalancer = loadBalancer;
+        }
+    }
+
     @Override
     public InetSocketAddress lookupService(String serviceName) {
         try {
@@ -30,7 +46,9 @@ public class NacosServiceDiscovery implements ServiceDiscovery{
                 log.error("找不到该服务：", serviceName);
                 throw new RPCException(RPCErrorEnum.SERVICE_NOT_FOUND);
             }
-            Instance instance = instances.get(0);
+            // load balance
+            Instance instance = loadBalancer.select(instances);
+            //Instance instance = instances.get(0);
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (NacosException e) {
             log.error("获取服务时发生错误：", e);

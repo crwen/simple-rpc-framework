@@ -7,6 +7,7 @@ import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.domain.enums.ResponseCode;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.loadbalancer.LoadBalancer;
 import top.crwenassert.rpc.registry.NacosServiceDiscovery;
 import top.crwenassert.rpc.registry.ServiceDiscovery;
 import top.crwenassert.rpc.serializer.CommonSerializer;
@@ -39,8 +40,25 @@ public class SocketClient implements RPCClient {
         this(DEFAULT_SERIALIZER);
     }
 
+    public SocketClient(LoadBalancer loadBalancer) {
+        this(DEFAULT_SERIALIZER, loadBalancer);
+    }
+
     public SocketClient(Integer serializer) {
+        if (CommonSerializer.getByCode(serializer) == null) {
+            log.error("不支持该序列化器");
+            throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
+        }
         this.serviceDiscovery = new NacosServiceDiscovery();
+        this.serializer = CommonSerializer.getByCode(serializer);
+    }
+
+    public SocketClient(Integer serializer, LoadBalancer loadBalancer) {
+        if (CommonSerializer.getByCode(serializer) == null) {
+            log.error("不支持该序列化器");
+            throw new RPCException(RPCErrorEnum.UNKNOWN_SERIALIZER);
+        }
+        this.serviceDiscovery = new NacosServiceDiscovery(loadBalancer);
         this.serializer = CommonSerializer.getByCode(serializer);
     }
 

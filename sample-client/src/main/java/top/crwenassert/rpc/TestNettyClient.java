@@ -21,7 +21,9 @@ public class TestNettyClient {
         HelloService proxy = rpcClientProxy.getProxy(HelloService.class);
 
         MessageObject object = new MessageObject(12, "This is a meaage");
-        String res = proxy.hello(object);
-        System.out.println(res);
+        for (int i = 0; i < 20; i++) {
+            String res = proxy.hello(object);
+            System.out.println(res);
+        }
     }
 }
