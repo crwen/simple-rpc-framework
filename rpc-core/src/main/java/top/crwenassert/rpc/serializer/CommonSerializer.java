@@ -13,7 +13,7 @@ public interface CommonSerializer {
 
     Integer KRYO_SERIALIZER = 0;
     Integer JSON_SERIALIZER = 1;
-
+    Integer PROTOBUF_SERIALIZER = 2;
     Integer DEFAULT_SERIALIZER = KRYO_SERIALIZER;
 
     byte[] serialize(Object obj);
@@ -28,6 +28,8 @@ public interface CommonSerializer {
                 return new KryoSerializer();
             case 1:
                 return new JsonSerializer();
+            case 2:
+                return new ProtobufSerializer();
             default:
                 return null;
         }

@@ -17,10 +17,8 @@ import top.crwenassert.rpc.transport.netty.client.NettyClient;
  */
 public class TestNettyClient {
 
-
-
     public static void main(String[] args) {
-        RPCClient client = new NettyClient(CommonSerializer.JSON_SERIALIZER);
+        RPCClient client = new NettyClient(CommonSerializer.PROTOBUF_SERIALIZER);
         RPCClientProxy rpcClientProxy = new RPCClientProxy(client);
         HelloService helloService = rpcClientProxy.getProxy(HelloService.class);
         ByeService byeService = rpcClientProxy.getProxy(ByeService.class);
