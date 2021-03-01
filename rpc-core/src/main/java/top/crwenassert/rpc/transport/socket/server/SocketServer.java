@@ -1,9 +1,9 @@
 package top.crwenassert.rpc.transport.socket.server;
 
 import lombok.extern.slf4j.Slf4j;
-import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.factory.ThreadPoolFactory;
 import top.crwenassert.rpc.handler.RequestHandler;
 import top.crwenassert.rpc.hook.ShutdownHook;
 import top.crwenassert.rpc.provide.ServiceProvider;
@@ -11,7 +11,7 @@ import top.crwenassert.rpc.provide.ServiceProviderImpl;
 import top.crwenassert.rpc.registry.NacosServiceRegistry;
 import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
-import top.crwenassert.rpc.factory.ThreadPoolFactory;
+import top.crwenassert.rpc.transport.AbstractRPCServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
  * @since JDK 1.8
  */
 @Slf4j
-public class SocketServer implements RPCServer {
+public class SocketServer extends AbstractRPCServer {
 
     private final String host;
     private final int port;
@@ -78,14 +78,5 @@ public class SocketServer implements RPCServer {
     }
 
 
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass) {
-        if (serializer == null) {
-            log.error("未设置序列化器");
-            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
-        }
-        serviceProvider.addServiceProvider(service, serviceClass);
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        start();
-    }
+
 }

@@ -1,6 +1,7 @@
 package top.crwenassert.rpc.service;
 
 import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.annotation.Service;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
 
@@ -14,6 +15,7 @@ import top.crwenassert.rpc.api.MessageObject;
  * @since JDK 1.8
  */
 @Slf4j
+@Service
 public class HelloServiceImpl implements HelloService {
 
     @Override

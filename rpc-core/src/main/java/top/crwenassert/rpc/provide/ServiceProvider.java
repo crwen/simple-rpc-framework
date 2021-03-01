@@ -18,7 +18,7 @@ public interface ServiceProvider {
      * @param serviceClass 服务 Class
      * @param <T>
      */
-    <T> void addServiceProvider(T service, Class<T> serviceClass);
+    <T> void addServiceProvider(T service, String serviceName);
 
     /**
      *  根据服务名称获取服务

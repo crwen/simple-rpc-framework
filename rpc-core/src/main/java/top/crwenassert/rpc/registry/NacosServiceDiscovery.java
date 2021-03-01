@@ -42,10 +42,6 @@ public class NacosServiceDiscovery implements ServiceDiscovery{
     public InetSocketAddress lookupService(String serviceName) {
         try {
             List<Instance> instances = NacosUtil.getAllInstance(serviceName);
-            if (instances == null || instances.size() == 0) {
-                log.error("找不到该服务：", serviceName);
-                throw new RPCException(RPCErrorEnum.SERVICE_NOT_FOUND);
-            }
             // load balance
             Instance instance = loadBalancer.select(instances);
             //Instance instance = instances.get(0);

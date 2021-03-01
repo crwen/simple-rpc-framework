@@ -37,15 +37,15 @@ public class RPCClientProxy implements InvocationHandler {
      * @param <T>
      * @return 代理对象
      */
-    @SuppressWarnings("unchecked")
-    public <T> T getProxy(Class<T> clazz) {
+    @SuppressWarnings("unchecked")    public <T> T getProxy(Class<T> clazz) {
         return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
                 new Class<?>[] {clazz}, this);
     }
 
+
     @SuppressWarnings("unchecked")
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) {
         log.info("调用方法: {}#{}", method.getDeclaringClass().getName(), method.getName());
         RPCRequest rpcRequest = RPCRequest.builder()
                 .requestId(UUID.randomUUID().toString())
@@ -59,8 +59,8 @@ public class RPCClientProxy implements InvocationHandler {
         RPCResponse rpcResponse = null;
 
         if (client instanceof NettyClient) {
-            CompletableFuture<RPCResponse> completableFuture = ((NettyClient) client).sendRequest(rpcRequest);
             try {
+                CompletableFuture<RPCResponse> completableFuture = ((NettyClient) client).sendRequest(rpcRequest);
                 rpcResponse = completableFuture.get();
             } catch (InterruptedException | ExecutionException e) {
                 log.error("方法调用请求发送失败", e);

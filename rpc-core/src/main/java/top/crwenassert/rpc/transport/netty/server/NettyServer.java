@@ -9,17 +9,13 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
-import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.hook.ShutdownHook;
-import top.crwenassert.rpc.provide.ServiceProvider;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
 import top.crwenassert.rpc.registry.NacosServiceRegistry;
-import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
-
-import java.net.InetSocketAddress;
+import top.crwenassert.rpc.transport.AbstractRPCServer;
 
 /**
  * ClassName: NettyServer
@@ -31,14 +27,7 @@ import java.net.InetSocketAddress;
  * @since JDK 1.8
  */
 @Slf4j
-public class NettyServer implements RPCServer {
-
-    private final String host;
-    private final int port;
-    // 服务注册中心
-    private final ServiceRegistry serviceRegistry;
-    // 本地服务提供者
-    private final ServiceProvider serviceProvider;
+public class NettyServer extends AbstractRPCServer {
 
     // 序列化器
     private final CommonSerializer serializer;
@@ -57,6 +46,7 @@ public class NettyServer implements RPCServer {
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
         this.serializer = CommonSerializer.getByCode(serializer);
+        scanServices();
     }
 
     @Override
@@ -91,16 +81,5 @@ public class NettyServer implements RPCServer {
     }
 
 
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass) {
-        if (serializer == null) {
-            log.error("未设置序列化器");
-            throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
-        }
-        // 将服务保存到本地
-        serviceProvider.addServiceProvider(service, serviceClass);
-        // 将服务注册到服务中心
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        start();
-    }
+
 }
