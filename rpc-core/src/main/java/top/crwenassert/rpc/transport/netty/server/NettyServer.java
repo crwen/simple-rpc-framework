@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.hook.ShutdownHook;
+import top.crwenassert.rpc.provide.CacheProviderImpl;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
 import top.crwenassert.rpc.registry.NacosServiceRegistry;
 import top.crwenassert.rpc.serializer.CommonSerializer;
@@ -46,6 +47,7 @@ public class NettyServer extends AbstractRPCServer {
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
         this.serializer = CommonSerializer.getByCode(serializer);
+        this.cacheProvider = new CacheProviderImpl();
         scanServices();
     }
 

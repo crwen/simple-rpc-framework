@@ -2,14 +2,19 @@ package top.crwenassert.rpc.transport;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
+import top.crwenassert.rpc.annotation.Cached;
 import top.crwenassert.rpc.annotation.RPCScan;
 import top.crwenassert.rpc.annotation.Service;
+import top.crwenassert.rpc.domain.dto.Invocation;
+import top.crwenassert.rpc.domain.dto.RpcServiceProperties;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.provide.CacheProvider;
 import top.crwenassert.rpc.provide.ServiceProvider;
 import top.crwenassert.rpc.registry.ServiceRegistry;
 import top.crwenassert.rpc.util.ClassUtil;
 
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.Set;
 
@@ -30,6 +35,7 @@ public abstract class AbstractRPCServer implements RPCServer {
 
     protected ServiceRegistry serviceRegistry;
     protected ServiceProvider serviceProvider;
+    protected CacheProvider cacheProvider;
 
     public void scanServices() {
         String mainClassName = ClassUtil.getStackTrace();
@@ -51,15 +57,37 @@ public abstract class AbstractRPCServer implements RPCServer {
         Set<Class<?>> classSet = ClassUtil.extractPackageClass(basePackage);
         for (Class<?> clazz : classSet) {
             if (clazz.isAnnotationPresent(Service.class)) {
-                String serviceName = clazz.getAnnotation(Service.class).group();
+                Service serviceAnno = clazz.getAnnotation(Service.class);
+                RpcServiceProperties properties = RpcServiceProperties.builder()
+                        .group(serviceAnno.group())
+                        .serviceName(clazz.getCanonicalName())
+                        .build();
+                String serviceName = properties.toRpcServiceName();
+                //String serviceName = clazz.getAnnotation(Service.class).group();
                 Object obj = ClassUtil.newInstance(clazz, true);
-                if ("".equals(serviceName)) {
+                if ("".equals(serviceAnno.group())) {
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for (Class<?> oneInterface : interfaces) {
                         publishService(obj, oneInterface.getCanonicalName());
                     }
                 } else {
                     publishService(obj, serviceName);
+                }
+
+                Method[] declaredMethods = clazz.getDeclaredMethods();
+                if (declaredMethods.length > 0) {
+                    for (Method method : declaredMethods) {
+                        if (method.isAnnotationPresent(Cached.class)){
+                            Cached cacheAnno = method.getAnnotation(Cached.class);
+                            Invocation invocation = Invocation.builder()
+                                    .paramTypes(method.getParameterTypes())
+                                    .parameters(method.getParameters())
+                                    .methodName(method.getName())
+                                    .cacheCode(cacheAnno.type())
+                                    .build();
+                            cacheProvider.addCache(invocation);
+                        }
+                    }
                 }
             }
         }

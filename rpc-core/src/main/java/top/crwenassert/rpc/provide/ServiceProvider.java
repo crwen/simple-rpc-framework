@@ -15,7 +15,7 @@ public interface ServiceProvider {
      *  保存本地服务
      *
      * @param service 服务实体
-     * @param serviceClass 服务 Class
+     * @param serviceName 服务 Class
      * @param <T>
      */
     <T> void addServiceProvider(T service, String serviceName);
