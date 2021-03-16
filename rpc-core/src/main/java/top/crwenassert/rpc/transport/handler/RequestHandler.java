@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.handler;
+package top.crwenassert.rpc.transport.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.cache.Cache;
@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 public class RequestHandler {
     private static final ServiceProvider serviceProvider;
     private static final CacheProvider cacheProvider;
-
     static {
         serviceProvider = new ServiceProviderImpl();
         cacheProvider = new CacheProviderImpl();
@@ -39,7 +38,7 @@ public class RequestHandler {
      * @return 请求执行结果
      */
     public Object handle(RPCRequest rpcRequest) {
-        Object service = serviceProvider.getServiceProvider(rpcRequest.getInterfaceName());
+        Object service = serviceProvider.getServiceProvider(rpcRequest.toRpcServiceName());
         return invokeTargetMethod(rpcRequest, service);
     }
 

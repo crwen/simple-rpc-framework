@@ -1,25 +1,25 @@
 package top.crwenassert.rpc.annotation;
 
 import org.springframework.context.annotation.Import;
-import top.crwenassert.rpc.spring.CustomScannerRegistrar;
+import top.crwenassert.rpc.transport.netty.server.NettyServer;
 
 import java.lang.annotation.*;
 
 /**
- * ClassName: RPCScan
+ * ClassName: ProviderScan
  * Description:
- * date: 2021/2/21 17:43
+ * date: 2021/3/16 15:32
  *
  * @author crwen
- * @create 2021-02-21-17:43
+ * @create 2021-03-16-15:32
  * @since JDK 1.8
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import({CustomScannerRegistrar.class})
+@RPCScan
+@Import(NettyServer.class)
 @Inherited
-public @interface RPCScan {
-
+public @interface ProviderScan {
     String basePackage() default "";
 
 }

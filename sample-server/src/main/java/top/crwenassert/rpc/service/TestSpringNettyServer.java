@@ -1,5 +1,6 @@
 package top.crwenassert.rpc.service;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import top.crwenassert.rpc.annotation.ProviderScan;
 import top.crwenassert.rpc.transport.netty.server.NettyServer;
 
@@ -13,11 +14,10 @@ import top.crwenassert.rpc.transport.netty.server.NettyServer;
  * @since JDK 1.8
  */
 @ProviderScan(basePackage = "top.crwenassert.rpc.service")
-public class TestNettyServer {
+public class TestSpringNettyServer {
     public static void main(String[] args) {
-        NettyServer server = new NettyServer();
-        server.scanServices();
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(TestSpringNettyServer.class);
+        NettyServer server = applicationContext.getBean(NettyServer.class);
         server.start();
     }
 }
-

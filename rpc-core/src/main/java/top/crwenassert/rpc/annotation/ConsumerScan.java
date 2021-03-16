@@ -6,18 +6,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * ClassName: Service
+ * ClassName: ConsumerScan
  * Description:
- * date: 2021/2/21 18:12
+ * date: 2021/3/16 15:38
  *
  * @author crwen
- * @create 2021-02-21-18:12
+ * @create 2021-03-16-15:38
  * @since JDK 1.8
  */
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Service {
-
-    String group() default "";
+@Target(ElementType.TYPE)
+@RPCScan
+public @interface ConsumerScan {
+    String basePackage() default "";
 
 }

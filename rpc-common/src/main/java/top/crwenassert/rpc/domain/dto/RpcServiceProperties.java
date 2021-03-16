@@ -1,5 +1,6 @@
 package top.crwenassert.rpc.domain.dto;
 
+import com.google.common.base.Strings;
 import lombok.*;
 
 /**
@@ -24,6 +25,8 @@ public class RpcServiceProperties {
     private String serviceName;
 
     public String toRpcServiceName() {
-        return this.getServiceName() + this.getGroup();
+        if (Strings.isNullOrEmpty(this.group))
+            return this.serviceName;
+        return this.getServiceName() + "_" + this.getGroup();
     }
 }

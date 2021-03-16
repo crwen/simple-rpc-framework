@@ -3,6 +3,7 @@ package top.crwenassert.rpc;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
+import top.crwenassert.rpc.domain.dto.RpcServiceProperties;
 import top.crwenassert.rpc.transport.netty.client.NettyClient;
 import top.crwenassert.rpc.transport.socket.client.SocketClient;
 
@@ -26,9 +27,11 @@ import java.util.concurrent.ExecutionException;
 public class RPCClientProxy implements InvocationHandler {
 
     private final RPCClient client;
+    private final RpcServiceProperties properties;
 
-    public RPCClientProxy(RPCClient client) {
+    public RPCClientProxy(RPCClient client, RpcServiceProperties properties) {
         this.client = client;
+        this.properties = properties;
     }
 
     /**
@@ -37,7 +40,8 @@ public class RPCClientProxy implements InvocationHandler {
      * @param <T>
      * @return 代理对象
      */
-    @SuppressWarnings("unchecked")    public <T> T getProxy(Class<T> clazz) {
+    @SuppressWarnings("unchecked")
+    public <T> T getProxy( Class<T> clazz) {
         return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
                 new Class<?>[] {clazz}, this);
     }
@@ -54,8 +58,8 @@ public class RPCClientProxy implements InvocationHandler {
                 .parameters(args)
                 .paramTypes(method.getParameterTypes())
                 .heartBeat(false)
+                .group(properties.getGroup())
                 .build();
-
         RPCResponse rpcResponse = null;
 
         if (client instanceof NettyClient) {

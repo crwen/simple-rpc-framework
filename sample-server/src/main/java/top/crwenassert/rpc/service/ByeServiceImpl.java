@@ -1,7 +1,7 @@
 package top.crwenassert.rpc.service;
 
 import lombok.extern.slf4j.Slf4j;
-import top.crwenassert.rpc.annotation.Service;
+import top.crwenassert.rpc.annotation.RPCService;
 import top.crwenassert.rpc.api.ByeService;
 
 /**
@@ -14,7 +14,7 @@ import top.crwenassert.rpc.api.ByeService;
  * @since JDK 1.8
  */
 @Slf4j
-@Service
+@RPCService
 public class ByeServiceImpl implements ByeService {
 
     @Override

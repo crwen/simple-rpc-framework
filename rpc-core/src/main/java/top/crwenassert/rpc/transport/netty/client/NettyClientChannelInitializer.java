@@ -4,8 +4,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
-import top.crwenassert.rpc.codec.CommonDecoder;
-import top.crwenassert.rpc.codec.CommonEncoder;
+import top.crwenassert.rpc.transport.netty.codec.CommonDecoder;
+import top.crwenassert.rpc.transport.netty.codec.CommonEncoder;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 
 import java.util.concurrent.TimeUnit;

@@ -1,5 +1,6 @@
 package top.crwenassert.rpc.domain.dto;
 
+import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -53,4 +54,15 @@ public class RPCRequest implements Serializable {
      * 是否是心跳包
      */
     private Boolean heartBeat;
+
+    /**
+     * 所属组
+     */
+    private String group;
+
+    public String toRpcServiceName() {
+        if (Strings.isNullOrEmpty(this.group))
+            return this.interfaceName;
+        return this.getInterfaceName() + "_" + this.getGroup();
+    }
 }

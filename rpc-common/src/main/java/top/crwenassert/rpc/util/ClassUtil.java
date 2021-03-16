@@ -7,6 +7,7 @@ import top.crwenassert.rpc.exception.RPCException;
 import java.io.File;
 import java.io.FileFilter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -132,6 +133,16 @@ public class ClassUtil {
             return (T) constructor.newInstance();
         } catch (Exception e) {
             log.error("创建 " + clazz + " 时发生错误，", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void setField(Field field, Object obj, Object value) {
+        field.setAccessible(true);
+        try {
+            field.set(obj, value);
+        } catch (IllegalAccessException e) {
+            log.error("为 " + obj.getClass() + " 设置属性失败, {}",e);
             throw new RuntimeException(e);
         }
     }

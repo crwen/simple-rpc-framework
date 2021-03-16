@@ -34,4 +34,17 @@ public interface CommonSerializer {
                 return null;
         }
     }
+
+    static CommonSerializer getByName(String name) {
+        switch (name) {
+            case "KYRO":
+                return new KryoSerializer();
+            case "JSON":
+                return new JsonSerializer();
+            case "PROTOBUF":
+                return new ProtobufSerializer();
+            default:
+                return null;
+        }
+    }
 }

@@ -1,10 +1,12 @@
 package top.crwenassert.rpc.service;
 
 import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.annotation.RPCService;
 import top.crwenassert.rpc.api.HelloService;
 import top.crwenassert.rpc.api.MessageObject;
 
 @Slf4j
+@RPCService(group = "hello2")
 public class HelloServiceImpl2 implements HelloService {
 
     @Override

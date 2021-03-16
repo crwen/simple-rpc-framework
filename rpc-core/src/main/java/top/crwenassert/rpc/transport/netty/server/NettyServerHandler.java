@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.factory.SingletonFactory;
-import top.crwenassert.rpc.handler.RequestHandler;
+import top.crwenassert.rpc.transport.handler.RequestHandler;
 
 /**
  * ClassName: NettyServerHandler
@@ -39,7 +39,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RPCRequest> 
                 return;
             }
             log.info("服务器接收到请求: {}", msg);
-            // handler
+            // top.crwenassert.rpc.transport.handler
             Object result = requestHandler.handle(msg);
             if (ctx.channel().isActive() && ctx.channel().isWritable()) {
                 // 回送

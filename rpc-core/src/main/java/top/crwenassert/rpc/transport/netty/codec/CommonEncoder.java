@@ -1,4 +1,4 @@
-package top.crwenassert.rpc.codec;
+package top.crwenassert.rpc.transport.netty.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

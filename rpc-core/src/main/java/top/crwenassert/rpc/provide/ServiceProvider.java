@@ -1,5 +1,7 @@
 package top.crwenassert.rpc.provide;
 
+import top.crwenassert.rpc.domain.dto.RpcServiceProperties;
+
 /**
  * ClassName: ServiceProvider
  * Description: 保存和提供实例对象
@@ -27,4 +29,13 @@ public interface ServiceProvider {
      * @return
      */
     Object getServiceProvider(String serviceName);
+
+    /**
+     *  发布服务
+     *
+     * @param service 服务
+     * @param rpcServiceProperties 服务配置
+     * @param <T>
+     */
+    <T> void publishService(T service, RpcServiceProperties rpcServiceProperties);
 }

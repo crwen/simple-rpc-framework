@@ -9,8 +9,12 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import top.crwenassert.rpc.config.PropertiesConfig;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
+import top.crwenassert.rpc.domain.enums.SerializerCode;
 import top.crwenassert.rpc.exception.RPCException;
+import top.crwenassert.rpc.factory.SingletonFactory;
 import top.crwenassert.rpc.hook.ShutdownHook;
 import top.crwenassert.rpc.provide.CacheProviderImpl;
 import top.crwenassert.rpc.provide.ServiceProviderImpl;
@@ -28,12 +32,22 @@ import top.crwenassert.rpc.transport.AbstractRPCServer;
  * @since JDK 1.8
  */
 @Slf4j
+@Component
 public class NettyServer extends AbstractRPCServer {
-
     // 序列化器
-    private final CommonSerializer serializer;
+    private CommonSerializer serializer;
 
-    public NettyServer(String host, int port) {
+    public NettyServer() {
+        this.serviceProvider = SingletonFactory.getInstance(ServiceProviderImpl.class);
+        this.serviceRegistry = SingletonFactory.getInstance(NacosServiceRegistry.class);
+
+        this.cacheProvider = SingletonFactory.getInstance(CacheProviderImpl.class);
+        this.host = PropertiesConfig.getHost();
+        this.port = PropertiesConfig.getPort();
+        this.serializer = PropertiesConfig.getSerializer();
+    }
+
+    public NettyServer(String host, int port, CommonSerializer serializer) {
         this(host, port, DEFAULT_SERIALIZER);
     }
 
@@ -51,12 +65,17 @@ public class NettyServer extends AbstractRPCServer {
         scanServices();
     }
 
+    public void setSerializer(SerializerCode serializer) {
+        this.serializer = CommonSerializer.getByCode(serializer.getCode());
+    }
+
     @Override
     public void start() {
         if (serializer == null) {
             log.error("未设置序列化器");
             throw new RPCException(RPCErrorEnum.SERIALIZER_NOT_FOUND);
         }
+
         // 启动前先清除服务
         ShutdownHook.getShutdownHook().addClearAllHook();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -81,7 +100,5 @@ public class NettyServer extends AbstractRPCServer {
             workerGroup.shutdownGracefully();
         }
     }
-
-
 
 }

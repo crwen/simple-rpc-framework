@@ -8,6 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCClient;
+import top.crwenassert.rpc.config.PropertiesConfig;
 import top.crwenassert.rpc.domain.dto.RPCRequest;
 import top.crwenassert.rpc.domain.dto.RPCResponse;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
@@ -48,7 +49,10 @@ public class NettyClient implements RPCClient {
     }
 
     public NettyClient() {
-        this(DEFAULT_SERIALIZER);
+        this.serviceDiscovery = new NacosServiceDiscovery();
+        this.unprocessedRequests = SingletonFactory.getInstance(UnprocessedRequests.class);
+        this.serializer = PropertiesConfig.getSerializer();
+
     }
 
     public NettyClient(LoadBalancer loadBalancer) {
@@ -83,7 +87,7 @@ public class NettyClient implements RPCClient {
         }
         CompletableFuture<RPCResponse> resultFuture = new CompletableFuture<>();
         try {
-            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.getInterfaceName());
+            InetSocketAddress inetSocketAddress = serviceDiscovery.lookupService(rpcRequest.toRpcServiceName());
             Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if (channel.isActive()) {
                 unprocessedRequests.put(rpcRequest.getRequestId(), resultFuture);

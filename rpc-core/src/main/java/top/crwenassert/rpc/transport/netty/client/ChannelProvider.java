@@ -8,13 +8,17 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
+import top.crwenassert.rpc.exception.RPCException;
 import top.crwenassert.rpc.serializer.CommonSerializer;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ClassName: ChannelProvider
@@ -30,7 +34,7 @@ public class ChannelProvider {
 
     private static EventLoopGroup eventLoopGroup;
     private static Bootstrap bootstrap = initializeBootstrap();
-
+    private static final int MAX_RETRY_COUNT = 5;
     private static Map<String, Channel> channelMap = new ConcurrentHashMap<>();
 
     //private static final int MAX_RETRY_COUNT = 5;
@@ -89,7 +93,31 @@ public class ChannelProvider {
                 log.info("客户端连接 【{}】成功！", inetSocketAddress);
                 completableFuture.complete(future.channel());
             } else {
-                throw new IllegalStateException();
+                completableFuture.complete(connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT));
+                //connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT);
+            }
+        });
+        return completableFuture.get();
+    }
+
+    private static Channel connect(Bootstrap bootstrap, InetSocketAddress inetSocketAddress, int retry) throws ExecutionException, InterruptedException {
+        CompletableFuture<Channel> completableFuture = new CompletableFuture<>();
+        bootstrap.connect(inetSocketAddress).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                log.info("客户端连接 【{}】成功！", inetSocketAddress);
+                completableFuture.complete(future.channel());
+            } else {
+                if (retry == 0) {
+                    log.error("客户端连接失败，放弃连接！");
+                    completableFuture.completeExceptionally(new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE));
+                    //throw new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE);
+                }
+                int order = (MAX_RETRY_COUNT - retry) + 1;
+                int delay = 1 << order;
+                log.error("{}: 连接失败，第 {} 次重连......", new Date(), order);
+                connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT);
+                bootstrap.config().group().schedule(() -> connect(bootstrap, inetSocketAddress, retry - 1), delay,
+                        TimeUnit.SECONDS);
             }
         });
         return completableFuture.get();

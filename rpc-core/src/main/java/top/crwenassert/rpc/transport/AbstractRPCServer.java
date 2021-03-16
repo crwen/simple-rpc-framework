@@ -3,8 +3,9 @@ package top.crwenassert.rpc.transport;
 import lombok.extern.slf4j.Slf4j;
 import top.crwenassert.rpc.RPCServer;
 import top.crwenassert.rpc.annotation.Cached;
+import top.crwenassert.rpc.annotation.ProviderScan;
 import top.crwenassert.rpc.annotation.RPCScan;
-import top.crwenassert.rpc.annotation.Service;
+import top.crwenassert.rpc.annotation.RPCService;
 import top.crwenassert.rpc.domain.dto.Invocation;
 import top.crwenassert.rpc.domain.dto.RpcServiceProperties;
 import top.crwenassert.rpc.domain.enums.RPCErrorEnum;
@@ -42,7 +43,7 @@ public abstract class AbstractRPCServer implements RPCServer {
         Class<?> startClass = null;
         try {
             startClass = Class.forName(mainClassName);
-            if (!startClass.isAnnotationPresent(RPCScan.class)) {
+            if (!startClass.isAnnotationPresent(RPCScan.class) && !startClass.isAnnotationPresent(ProviderScan.class)) {
                 log.error("启动类缺少 @RPCScan 注解");
                 throw new RPCException(RPCErrorEnum.SERVICE_SCAN_PACKAGE_NOT_FOUND);
             }
@@ -50,17 +51,22 @@ public abstract class AbstractRPCServer implements RPCServer {
             log.error("出现未知错误");
             throw new RPCException(RPCErrorEnum.UNKNOWN_ERROR);
         }
-        String basePackage = startClass.getAnnotation(RPCScan.class).basePackage();
+        String basePackage = "";
+        if (startClass.isAnnotationPresent(RPCScan.class)) {
+            basePackage = startClass.getAnnotation(RPCScan.class).basePackage();
+        } else if (startClass.isAnnotationPresent(ProviderScan.class)) {
+            basePackage = startClass.getAnnotation(ProviderScan.class).basePackage();
+        }
         if ("".equals(basePackage)) {
             basePackage = mainClassName.substring(0, mainClassName.lastIndexOf("."));
         }
         Set<Class<?>> classSet = ClassUtil.extractPackageClass(basePackage);
         for (Class<?> clazz : classSet) {
-            if (clazz.isAnnotationPresent(Service.class)) {
-                Service serviceAnno = clazz.getAnnotation(Service.class);
+            if (clazz.isAnnotationPresent(RPCService.class)) {
+                RPCService serviceAnno = clazz.getAnnotation(RPCService.class);
                 RpcServiceProperties properties = RpcServiceProperties.builder()
                         .group(serviceAnno.group())
-                        .serviceName(clazz.getCanonicalName())
+                        .serviceName(clazz.getInterfaces()[0].getCanonicalName())
                         .build();
                 String serviceName = properties.toRpcServiceName();
                 //String serviceName = clazz.getAnnotation(Service.class).group();
