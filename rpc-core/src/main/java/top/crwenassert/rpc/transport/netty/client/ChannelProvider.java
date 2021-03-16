@@ -34,7 +34,7 @@ public class ChannelProvider {
 
     private static EventLoopGroup eventLoopGroup;
     private static Bootstrap bootstrap = initializeBootstrap();
-    private static final int MAX_RETRY_COUNT = 5;
+    private static final int MAX_RETRY_COUNT = 3;
     private static Map<String, Channel> channelMap = new ConcurrentHashMap<>();
 
     //private static final int MAX_RETRY_COUNT = 5;
@@ -94,7 +94,6 @@ public class ChannelProvider {
                 completableFuture.complete(future.channel());
             } else {
                 completableFuture.complete(connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT));
-                //connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT);
             }
         });
         return completableFuture.get();
@@ -109,13 +108,12 @@ public class ChannelProvider {
             } else {
                 if (retry == 0) {
                     log.error("客户端连接失败，放弃连接！");
-                    completableFuture.completeExceptionally(new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE));
-                    //throw new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE);
+                    //completableFuture.completeExceptionally(new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE));
+                    throw new RPCException(RPCErrorEnum.UNKNOWN_ERROR.CLIENT_CONNECT_SERVER_FAILURE);
                 }
                 int order = (MAX_RETRY_COUNT - retry) + 1;
                 int delay = 1 << order;
                 log.error("{}: 连接失败，第 {} 次重连......", new Date(), order);
-                connect(bootstrap, inetSocketAddress, MAX_RETRY_COUNT);
                 bootstrap.config().group().schedule(() -> connect(bootstrap, inetSocketAddress, retry - 1), delay,
                         TimeUnit.SECONDS);
             }
